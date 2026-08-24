@@ -1,0 +1,818 @@
+[gd_scene load_steps=27 format=3 uid="uid://c6s70e5mfx2d8"]
+
+[ext_resource type="Script" path="res://scripts/core/Arena.gd" id="1_arena"]
+[ext_resource type="PackedScene" uid="uid://dj4n08m51p34e" path="res://scenes/combat/CoreBase.tscn" id="2_core"]
+[ext_resource type="PackedScene" uid="uid://bxy86l33f721c" path="res://scenes/combat/WaveSpawner.tscn" id="3_spawner"]
+[ext_resource type="PackedScene" uid="uid://d1w8j37n9x2lm" path="res://scenes/combat/BuildSocket.tscn" id="4_socket"]
+[ext_resource type="PackedScene" uid="uid://b6p4q8l02vx7y" path="res://scenes/ui/BuildMenu.tscn" id="5_build_menu"]
+[ext_resource type="PackedScene" uid="uid://dp7y1u38kx5qw" path="res://scenes/ui/SkillTree.tscn" id="6_skill_tree"]
+[ext_resource type="PackedScene" uid="uid://b237j08g5x4nm" path="res://scenes/ui/GameOverModal.tscn" id="7_game_over"]
+[ext_resource type="PackedScene" uid="uid://cb548g71w0x8v" path="res://scenes/ui/CardDraftModal.tscn" id="8_card_draft"]
+[ext_resource type="PackedScene" uid="uid://cx60v83qmpx1y" path="res://scenes/ui/SettingsModal.tscn" id="9_settings"]
+[ext_resource type="PackedScene" uid="uid://bvy7k8m1f4y1h" path="res://scenes/ui/VictoryModal.tscn" id="10_victory"]
+[ext_resource type="Shader" path="res://assets/shaders/CRTShader.gdshader" id="11_crt_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
+shader = ExtResource("11_crt_shader")
+shader_parameter/scanline_count = 540.0
+shader_parameter/scanline_intensity = 0.06
+shader_parameter/curvature = 0.006
+shader_parameter/vignette_intensity = 0.12
+
+[sub_resource type="Environment" id="Environment_perimeta"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 0.8
+glow_strength = 1.0
+glow_bloom = 0.15
+glow_hdr_threshold = 1.0
+glow_blend_mode = 1
+
+[sub_resource type="Curve2D" id="Curve2D_north"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 120, 140, 0, 0, 0, 0, 1800, 140, 0, 0, 0, 0, 1800, 240, 0, 0, 0, 0, 300, 240, 0, 0, 0, 0, 300, 340, 0, 0, 0, 0, 960, 340, 0, 0, 0, 0, 960, 470)
+}
+point_count = 7
+
+[sub_resource type="Curve2D" id="Curve2D_south"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 1800, 900, 0, 0, 0, 0, 120, 900, 0, 0, 0, 0, 120, 800, 0, 0, 0, 0, 1620, 800, 0, 0, 0, 0, 1620, 700, 0, 0, 0, 0, 960, 700, 0, 0, 0, 0, 960, 610)
+}
+point_count = 7
+
+[sub_resource type="Curve2D" id="Curve2D_west"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 120, 440, 0, 0, 0, 0, 120, 680, 0, 0, 0, 0, 240, 680, 0, 0, 0, 0, 240, 380, 0, 0, 0, 0, 650, 380, 0, 0, 0, 0, 650, 540, 0, 0, 0, 0, 890, 540)
+}
+point_count = 7
+
+[sub_resource type="Curve2D" id="Curve2D_east"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 1800, 600, 0, 0, 0, 0, 1800, 360, 0, 0, 0, 0, 1680, 360, 0, 0, 0, 0, 1680, 660, 0, 0, 0, 0, 1270, 660, 0, 0, 0, 0, 1270, 540, 0, 0, 0, 0, 1030, 540)
+}
+point_count = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_normal"]
+bg_color = Color(0.08, 0.12, 0.18, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.3, 0.45, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_speed_active"]
+bg_color = Color(0.15, 0.45, 0.65, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.9, 1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_skill_hud"]
+bg_color = Color(0.12, 0.2, 0.32, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.8, 1, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boss_bg"]
+bg_color = Color(0.06, 0.08, 0.12, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.1, 0.2, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boss_fill"]
+bg_color = Color(1, 0.18, 0.38, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner"]
+bg_color = Color(0.15, 0.02, 0.05, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.2, 0.3, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_resonance_badge"]
+bg_color = Color(0.06, 0.09, 0.14, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.8, 1, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
+bg_color = Color(0.08, 0.1, 0.14, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
+bg_color = Color(0.1, 0.8, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_super_fill"]
+bg_color = Color(0.2, 0.85, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_overcharge"]
+bg_color = Color(0.08, 0.28, 0.38, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.85, 1, 0.7)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_panel"]
+bg_color = Color(0.08, 0.1, 0.15, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.5, 0.75, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pause"]
+bg_color = Color(0.12, 0.2, 0.32, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.6, 0.8, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_arena")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_perimeta")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="Background" type="CanvasModulate" parent="."]
+color = Color(0.95, 0.95, 1, 1)
+
+[node name="GridVisuals" type="Node2D" parent="."]
+
+[node name="PerimeterBorder" type="Line2D" parent="GridVisuals"]
+points = PackedVector2Array(80, 80, 1840, 80, 1840, 1000, 80, 1000, 80, 80)
+width = 2.0
+default_color = Color(0.18, 0.22, 0.32, 0.5)
+
+[node name="Crosshairs" type="Line2D" parent="GridVisuals"]
+points = PackedVector2Array(960, 80, 960, 1000)
+width = 1.0
+default_color = Color(0.15, 0.18, 0.28, 0.25)
+
+[node name="CrosshairsHoriz" type="Line2D" parent="GridVisuals"]
+points = PackedVector2Array(80, 540, 1840, 540)
+width = 1.0
+default_color = Color(0.15, 0.18, 0.28, 0.25)
+
+[node name="PathVisuals" type="Node2D" parent="."]
+
+[node name="PathVisual_North" type="Line2D" parent="PathVisuals"]
+width = 5.0
+default_color = Color(0.14, 0.28, 0.42, 0.6)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="PathVisual_South" type="Line2D" parent="PathVisuals"]
+width = 5.0
+default_color = Color(0.14, 0.28, 0.42, 0.6)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="PathVisual_West" type="Line2D" parent="PathVisuals"]
+width = 5.0
+default_color = Color(0.14, 0.28, 0.42, 0.6)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="PathVisual_East" type="Line2D" parent="PathVisuals"]
+width = 5.0
+default_color = Color(0.14, 0.28, 0.42, 0.6)
+begin_cap_mode = 2
+end_cap_mode = 2
+
+[node name="CursorLaser" type="Line2D" parent="."]
+visible = false
+width = 4.0
+default_color = Color(3, 2.5, 0.5, 1)
+
+[node name="ShockwaveRing" type="Line2D" parent="."]
+visible = false
+width = 6.0
+default_color = Color(1.5, 3, 4, 1)
+
+[node name="Tracks" type="Node2D" parent="."]
+
+[node name="Path_North" type="Path2D" parent="Tracks"]
+curve = SubResource("Curve2D_north")
+
+[node name="Path_South" type="Path2D" parent="Tracks"]
+curve = SubResource("Curve2D_south")
+
+[node name="Path_West" type="Path2D" parent="Tracks"]
+curve = SubResource("Curve2D_west")
+
+[node name="Path_East" type="Path2D" parent="Tracks"]
+curve = SubResource("Curve2D_east")
+
+[node name="CoreBase" parent="." instance=ExtResource("2_core")]
+position = Vector2(960, 540)
+
+[node name="WaveSpawner" parent="." node_paths=PackedStringArray("path_north", "path_south", "path_east", "path_west", "target_path") instance=ExtResource("3_spawner")]
+path_north = NodePath("../Tracks/Path_North")
+path_south = NodePath("../Tracks/Path_South")
+path_east = NodePath("../Tracks/Path_East")
+path_west = NodePath("../Tracks/Path_West")
+target_path = NodePath("../Tracks/Path_North")
+
+[node name="Sockets" type="Node2D" parent="."]
+
+[node name="Socket_01" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(820, 440)
+initial_state = 1
+unlock_cost = 0
+
+[node name="Socket_02" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1100, 440)
+initial_state = 1
+unlock_cost = 0
+
+[node name="Socket_03" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(820, 640)
+initial_state = 1
+unlock_cost = 0
+
+[node name="Socket_04" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1100, 640)
+initial_state = 1
+unlock_cost = 0
+
+[node name="Socket_05" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(550, 190)
+unlock_cost = 200
+
+[node name="Socket_06" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1050, 190)
+unlock_cost = 300
+
+[node name="Socket_07" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1550, 190)
+unlock_cost = 400
+
+[node name="Socket_08" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(370, 850)
+unlock_cost = 250
+
+[node name="Socket_09" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(870, 850)
+unlock_cost = 350
+
+[node name="Socket_10" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1370, 850)
+unlock_cost = 450
+
+[node name="Socket_11" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(460, 290)
+unlock_cost = 500
+
+[node name="Socket_12" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1460, 290)
+unlock_cost = 600
+
+[node name="Socket_13" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(460, 750)
+unlock_cost = 500
+
+[node name="Socket_14" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1460, 750)
+unlock_cost = 600
+
+[node name="Socket_15" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(180, 540)
+unlock_cost = 700
+
+[node name="Socket_16" parent="Sockets" instance=ExtResource("4_socket")]
+position = Vector2(1740, 480)
+unlock_cost = 800
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 80.0
+offset_top = 24.0
+offset_right = -80.0
+offset_bottom = 68.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+
+[node name="WaveLabel" type="Label" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "WAVE 01"
+
+[node name="CoresHudLabel" type="Label" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "CORES: 0"
+
+[node name="SpeedControls" type="HBoxContainer" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Speed1Btn" type="Button" parent="CanvasLayer/HUD/TopBar/SpeedControls"]
+custom_minimum_size = Vector2(42, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_speed_active")
+text = "1X"
+
+[node name="Speed2Btn" type="Button" parent="CanvasLayer/HUD/TopBar/SpeedControls"]
+custom_minimum_size = Vector2(42, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_speed_normal")
+text = "2X"
+
+[node name="Speed4Btn" type="Button" parent="CanvasLayer/HUD/TopBar/SpeedControls"]
+custom_minimum_size = Vector2(42, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_speed_normal")
+text = "4X"
+
+[node name="Spacer" type="Control" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CurrencyLabel" type="Label" parent="CanvasLayer/HUD/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 24
+text = "BITS: 250 (GUN: 5)"
+
+[node name="SkillTreeOpenButton" type="Button" parent="CanvasLayer/HUD/TopBar"]
+custom_minimum_size = Vector2(140, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_skill_hud")
+text = "SKILL TREE"
+
+[node name="LangButton" type="Button" parent="CanvasLayer/HUD/TopBar"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_skill_hud")
+text = "[ EN ] | FR"
+
+[node name="ResonanceContainer" type="HBoxContainer" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 80.0
+offset_top = 74.0
+offset_right = -80.0
+offset_bottom = 102.0
+grow_horizontal = 2
+theme_override_constants/separation = 12
+
+[node name="CryoBadge" type="PanelContainer" parent="CanvasLayer/HUD/ResonanceContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_resonance_badge")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD/ResonanceContainer/CryoBadge"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/HUD/ResonanceContainer/CryoBadge/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "❄ CRYO RESONANCE // PERMAFROST"
+
+[node name="ElectroBadge" type="PanelContainer" parent="CanvasLayer/HUD/ResonanceContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_resonance_badge")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD/ResonanceContainer/ElectroBadge"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/HUD/ResonanceContainer/ElectroBadge/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+text = "⚡ ELECTRO RESONANCE // HIGH VOLTAGE"
+
+[node name="PyroBadge" type="PanelContainer" parent="CanvasLayer/HUD/ResonanceContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_resonance_badge")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD/ResonanceContainer/PyroBadge"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/HUD/ResonanceContainer/PyroBadge/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.1, 1)
+theme_override_font_sizes/font_size = 11
+text = "🔥 PYRO RESONANCE // COMBUSTION"
+
+[node name="KineticBadge" type="PanelContainer" parent="CanvasLayer/HUD/ResonanceContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_resonance_badge")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD/ResonanceContainer/KineticBadge"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/HUD/ResonanceContainer/KineticBadge/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "🎯 KINETIC RESONANCE // BALLISTIC SWARM"
+
+[node name="BossHealthBarContainer" type="VBoxContainer" parent="CanvasLayer/HUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 110.0
+offset_right = 300.0
+offset_bottom = 156.0
+grow_horizontal = 2
+theme_override_constants/separation = 4
+
+[node name="BossHeader" type="HBoxContainer" parent="CanvasLayer/HUD/BossHealthBarContainer"]
+layout_mode = 2
+
+[node name="BossTitleLabel" type="Label" parent="CanvasLayer/HUD/BossHealthBarContainer/BossHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.3, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "TITAN ANOMALY"
+
+[node name="BossShieldStatusLabel" type="Label" parent="CanvasLayer/HUD/BossHealthBarContainer/BossHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "[PHASE SHIELD ACTIVE]"
+
+[node name="BossProgressBar" type="ProgressBar" parent="CanvasLayer/HUD/BossHealthBarContainer"]
+custom_minimum_size = Vector2(600, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_boss_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_boss_fill")
+value = 100.0
+show_percentage = false
+
+[node name="BossHpLabel" type="Label" parent="CanvasLayer/HUD/BossHealthBarContainer/BossProgressBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_font_sizes/font_size = 11
+text = "500 / 500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BossAlertBanner" type="PanelContainer" parent="CanvasLayer/HUD"]
+visible = false
+custom_minimum_size = Vector2(500, 60)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -140.0
+offset_right = 250.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="AlertLabel" type="Label" parent="CanvasLayer/HUD/BossAlertBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.25, 0.35, 1)
+theme_override_font_sizes/font_size = 20
+text = "WARNING // TITAN ANOMALY DETECTED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SectorAlertBanner" type="PanelContainer" parent="CanvasLayer/HUD"]
+visible = false
+custom_minimum_size = Vector2(620, 64)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -60.0
+offset_right = 310.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_banner")
+
+[node name="SectorAlertLabel" type="Label" parent="CanvasLayer/HUD/SectorAlertBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "ALERT: NEW PERIMETER BREACH SECTOR ONLINE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomBar" type="HBoxContainer" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = -68.0
+offset_right = -80.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="CoreHealthBox" type="VBoxContainer" parent="CanvasLayer/HUD/BottomBar"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CoreHpTitle" type="Label" parent="CanvasLayer/HUD/BottomBar/CoreHealthBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 11
+text = "CORE DEFENSE SHIELD"
+
+[node name="HealthBar" type="ProgressBar" parent="CanvasLayer/HUD/BottomBar/CoreHealthBox"]
+custom_minimum_size = Vector2(340, 20)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
+value = 100.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="CanvasLayer/HUD/BottomBar/CoreHealthBox/HealthBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SuperMeterBox" type="VBoxContainer" parent="CanvasLayer/HUD/BottomBar"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SuperTitle" type="Label" parent="CanvasLayer/HUD/BottomBar/SuperMeterBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "EMP SHOCKWAVE [SPACE / RMB]"
+
+[node name="SuperBar" type="ProgressBar" parent="CanvasLayer/HUD/BottomBar/SuperMeterBox"]
+custom_minimum_size = Vector2(340, 20)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_super_fill")
+value = 0.0
+show_percentage = false
+
+[node name="SuperLabel" type="Label" parent="CanvasLayer/HUD/BottomBar/SuperMeterBox/SuperBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+theme_override_font_sizes/font_size = 12
+text = "CHARGE: 0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OverchargeBtn" type="Button" parent="CanvasLayer/HUD/BottomBar/SuperMeterBox"]
+custom_minimum_size = Vector2(340, 22)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_overcharge")
+text = "TACTICAL OVERCHARGE (+50% SUPER / 1500 BITS)"
+
+[node name="BuildMenu" parent="CanvasLayer" instance=ExtResource("5_build_menu")]
+visible = false
+
+[node name="CardDraftModal" parent="CanvasLayer" instance=ExtResource("8_card_draft")]
+visible = false
+
+[node name="SkillTree" parent="CanvasLayer" instance=ExtResource("6_skill_tree")]
+visible = false
+
+[node name="GameOverModal" parent="CanvasLayer" instance=ExtResource("7_game_over")]
+visible = false
+
+[node name="SettingsModal" parent="CanvasLayer" instance=ExtResource("9_settings")]
+visible = false
+
+[node name="VictoryModal" parent="CanvasLayer" instance=ExtResource("10_victory")]
+visible = false
+
+[node name="PauseMenu" type="Control" parent="CanvasLayer"]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PauseColorRect" type="ColorRect" parent="CanvasLayer/PauseMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.08, 0.8)
+
+[node name="PauseCenter" type="CenterContainer" parent="CanvasLayer/PauseMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PausePanel" type="PanelContainer" parent="CanvasLayer/PauseMenu/PauseCenter"]
+custom_minimum_size = Vector2(360, 320)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pause_panel")
+
+[node name="PauseMargin" type="MarginContainer" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="PauseVBox" type="VBoxContainer" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="PauseTitle" type="Label" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin/PauseVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "SYSTEM PAUSED"
+horizontal_alignment = 1
+
+[node name="ResumeBtn" type="Button" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin/PauseVBox"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_pause")
+text = "RESUME DEFENSE"
+
+[node name="PauseSettingsBtn" type="Button" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin/PauseVBox"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_pause")
+text = "SETTINGS"
+
+[node name="PauseRestartBtn" type="Button" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin/PauseVBox"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_pause")
+text = "RESTART RUN"
+
+[node name="PauseMainMenuBtn" type="Button" parent="CanvasLayer/PauseMenu/PauseCenter/PausePanel/PauseMargin/PauseVBox"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_pause")
+text = "MAIN MENU"
+
+[node name="CRTLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="CRTOverlay" type="ColorRect" parent="CRTLayer"]
+material = SubResource("ShaderMaterial_crt")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

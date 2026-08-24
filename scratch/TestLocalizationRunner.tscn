@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cq5eto2tmfens"]
+
+[ext_resource type="Script" path="res://scratch/test_localization_runner.gd" id="1_test_loc"]
+
+[node name="TestLocalizationRunner" type="Node"]
+script = ExtResource("1_test_loc")

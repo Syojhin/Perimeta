@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1gqm78t5bxk4"]
+
+[ext_resource type="Script" path="res://scripts/enemies/BossEnemy.gd" id="1_boss_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hitbox"]
+radius = 34.0
+
+[node name="BossEnemy" type="PathFollow2D" groups=["enemies"]]
+rotates = true
+loop = false
+script = ExtResource("1_boss_script")
+enemy_name = "Titan Core"
+max_hp = 500.0
+move_speed = 38.0
+core_damage = 40.0
+bounty = 200
+primary_color = Color(1, 0.22, 0.45, 1)
+
+[node name="HitboxArea" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxArea"]
+shape = SubResource("CircleShape2D_hitbox")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterShell" type="Polygon2D" parent="Visual"]
+color = Color(0.85, 0.12, 0.32, 1)
+polygon = PackedVector2Array(26, 11, 11, 26, -11, 26, -26, 11, -26, -11, -11, -26, 11, -26, 26, -11)
+
+[node name="InnerCore" type="Polygon2D" parent="Visual"]
+color = Color(1.8, 1.2, 0.3, 1)
+polygon = PackedVector2Array(0, -16, 16, 0, 0, 16, -16, 0)
+
+[node name="ShieldBarrier" type="Line2D" parent="Visual"]
+visible = false
+points = PackedVector2Array(0, -36, 32, -18, 32, 18, 0, 36, -32, 18, -32, -18, 0, -36)
+width = 3.5
+default_color = Color(0.4, 2, 3, 1)
+
+[node name="HealthBar" type="Node2D" parent="."]
+
+[node name="HealthBarBg" type="ColorRect" parent="HealthBar"]
+offset_left = -24.0
+offset_top = -42.0
+offset_right = 24.0
+offset_bottom = -37.0
+color = Color(0.08, 0.1, 0.14, 0.8)
+
+[node name="HealthBarFill" type="ColorRect" parent="HealthBar"]
+offset_left = -24.0
+offset_top = -42.0
+offset_right = 24.0
+offset_bottom = -37.0
+color = Color(1, 0.25, 0.4, 1)

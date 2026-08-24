@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://dsu82n81p4k2l"]
+
+[ext_resource type="Script" path="res://scripts/enemies/ScoutEnemy.gd" id="1_scout_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_scout"]
+radius = 14.0
+
+[node name="ScoutEnemy" type="PathFollow2D"]
+rotates = true
+loop = false
+script = ExtResource("1_scout_script")
+enemy_name = "Scout Runner"
+max_hp = 25.0
+move_speed = 260.0
+core_damage = 8.0
+bounty = 12
+primary_color = Color(1, 0.92, 0.2, 1)
+
+[node name="HitboxArea" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxArea"]
+shape = SubResource("CircleShape2D_scout")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="Polygon2D" parent="Visual"]
+color = Color(1, 0.92, 0.2, 0.3)
+polygon = PackedVector2Array(18, 0, -8, -12, -14, 0, -8, 12)
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+color = Color(1, 0.92, 0.2, 1)
+polygon = PackedVector2Array(14, 0, -6, -9, -10, 0, -6, 9)
+
+[node name="Core" type="Polygon2D" parent="Visual"]
+color = Color(1, 1, 0.8, 1)
+polygon = PackedVector2Array(6, 0, -2, -4, -4, 0, -2, 4)
+
+[node name="HealthBar" type="Node2D" parent="."]
+position = Vector2(0, -18)
+
+[node name="HealthBarBg" type="ColorRect" parent="HealthBar"]
+offset_left = -12.0
+offset_top = -2.0
+offset_right = 12.0
+offset_bottom = 2.0
+color = Color(0.08, 0.09, 0.12, 0.8)
+
+[node name="HealthBarFill" type="ColorRect" parent="HealthBar"]
+offset_left = -12.0
+offset_top = -2.0
+offset_right = 12.0
+offset_bottom = 2.0
+color = Color(0.2, 0.9, 0.4, 1)

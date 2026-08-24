@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://dsu82n82p5k3m"]
+
+[ext_resource type="Script" path="res://scripts/enemies/ShieldEnemy.gd" id="1_shield_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shield"]
+radius = 20.0
+
+[node name="ShieldEnemy" type="PathFollow2D"]
+rotates = true
+loop = false
+script = ExtResource("1_shield_script")
+enemy_name = "Shield Drone"
+max_hp = 110.0
+move_speed = 90.0
+core_damage = 15.0
+bounty = 28
+primary_color = Color(0.2, 0.85, 1, 1)
+
+[node name="HitboxArea" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxArea"]
+shape = SubResource("CircleShape2D_shield")
+
+[node name="AuraGlow" type="Polygon2D" parent="."]
+color = Color(0.2, 0.8, 1, 0.08)
+polygon = PackedVector2Array(0, -120, 85, -85, 120, 0, 85, 85, 0, 120, -85, 85, -120, 0, -85, -85)
+
+[node name="AuraRing" type="Line2D" parent="."]
+width = 1.5
+default_color = Color(0.3, 0.85, 1, 0.5)
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="Polygon2D" parent="Visual"]
+color = Color(0.2, 0.85, 1, 0.3)
+polygon = PackedVector2Array(0, -22, 19, -11, 19, 11, 0, 22, -19, 11, -19, -11)
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+color = Color(0.2, 0.85, 1, 1)
+polygon = PackedVector2Array(0, -16, 14, -8, 14, 8, 0, 16, -14, 8, -14, -8)
+
+[node name="Core" type="Polygon2D" parent="Visual"]
+color = Color(0.85, 0.95, 1, 1)
+polygon = PackedVector2Array(0, -8, 7, -4, 7, 4, 0, 8, -7, 4, -7, -4)
+
+[node name="HealthBar" type="Node2D" parent="."]
+position = Vector2(0, -26)
+
+[node name="HealthBarBg" type="ColorRect" parent="HealthBar"]
+offset_left = -18.0
+offset_top = -2.0
+offset_right = 18.0
+offset_bottom = 2.0
+color = Color(0.08, 0.09, 0.12, 0.8)
+
+[node name="HealthBarFill" type="ColorRect" parent="HealthBar"]
+offset_left = -18.0
+offset_top = -2.0
+offset_right = 18.0
+offset_bottom = 2.0
+color = Color(0.2, 0.9, 0.4, 1)

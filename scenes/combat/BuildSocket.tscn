@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1w8j37n9x2lm"]
+
+[ext_resource type="Script" path="res://scripts/core/BuildSocket.gd" id="1_socket_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_socket"]
+radius = 32.0
+
+[node name="BuildSocket" type="Area2D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_socket_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_socket")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Pad" type="Polygon2D" parent="Visual"]
+color = Color(0.08, 0.14, 0.22, 0.25)
+polygon = PackedVector2Array(0, -26, 18, -18, 26, 0, 18, 18, 0, 26, -18, 18, -26, 0, -18, -18)
+
+[node name="Ring" type="Line2D" parent="Visual"]
+points = PackedVector2Array(0, -26, 18, -18, 26, 0, 18, 18, 0, 26, -18, 18, -26, 0, -18, -18, 0, -26)
+width = 2.0
+default_color = Color(0.2, 0.45, 0.65, 0.45)
+
+[node name="CenterDot" type="Polygon2D" parent="Visual"]
+color = Color(0.3, 0.7, 0.9, 0.6)
+polygon = PackedVector2Array(0, -4, 4, 0, 0, 4, -4, 0)
+
+[node name="LockLabel" type="Label" parent="Visual"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -18.0
+offset_right = 40.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.75, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0.05, 0.05, 0.08, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "UNLOCK
+250 B"
+horizontal_alignment = 1
+vertical_alignment = 1

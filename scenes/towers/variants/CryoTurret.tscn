@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://df5j78xa1k0nm"]
+
+[ext_resource type="Script" path="res://scripts/core/CryoTurret.gd" id="1_cryo_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+radius = 240.0
+
+[node name="CryoTurret" type="Node2D"]
+script = ExtResource("1_cryo_script")
+tower_name = "Cryo Emitter"
+attack_range = 240.0
+fire_rate = 1.0
+damage = 12.0
+cost = 150
+
+[node name="RangeArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeArea"]
+shape = SubResource("CircleShape2D_range")
+
+[node name="BaseVisual" type="Node2D" parent="."]
+
+[node name="OuterBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.08, 0.16, 0.26, 1)
+polygon = PackedVector2Array(-20, -12, 0, -22, 20, -12, 20, 12, 0, 22, -20, 12)
+
+[node name="InnerBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.12, 0.28, 0.42, 1)
+polygon = PackedVector2Array(-14, -8, 0, -15, 14, -8, 14, 8, 0, 15, -14, 8)
+
+[node name="TurretHead" type="Node2D" parent="."]
+
+[node name="FrostPrism" type="Polygon2D" parent="TurretHead"]
+color = Color(0.2, 0.75, 0.95, 1)
+polygon = PackedVector2Array(-8, -12, 16, -6, 24, 0, 16, 6, -8, 12, -12, 0)
+
+[node name="CrystalCore" type="Polygon2D" parent="TurretHead"]
+color = Color(0.7, 0.95, 1, 1)
+polygon = PackedVector2Array(-4, -6, 8, 0, -4, 6, -6, 0)
+
+[node name="Muzzle" type="Marker2D" parent="TurretHead"]
+position = Vector2(25, 0)
+
+[node name="LaserBeam" type="Line2D" parent="."]
+visible = false
+width = 4.0
+default_color = Color(0.4, 0.88, 1, 1)

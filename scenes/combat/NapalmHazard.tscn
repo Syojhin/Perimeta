@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://d0f8mgjo3cum3"]
+
+[ext_resource type="Script" path="res://scripts/combat/NapalmHazard.gd" id="1_napalm_script"]
+
+[node name="NapalmHazard" type="Node2D"]
+script = ExtResource("1_napalm_script")
+
+[node name="PuddlePolygon" type="Polygon2D" parent="."]
+color = Color(2, 0.45, 0.1, 0.5)

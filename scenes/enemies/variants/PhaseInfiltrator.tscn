@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=3 uid="uid://dsu82n85p8k6p"]
+
+[ext_resource type="Script" path="res://scripts/enemies/PhaseInfiltrator.gd" id="1_infiltrator_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_infiltrator"]
+radius = 15.0
+
+[node name="PhaseInfiltrator" type="PathFollow2D"]
+rotates = true
+loop = false
+script = ExtResource("1_infiltrator_script")
+enemy_name = "Phase Infiltrator"
+max_hp = 45.0
+move_speed = 180.0
+core_damage = 12.0
+bounty = 24
+primary_color = Color(0.3, 0.85, 1, 1)
+
+[node name="HitboxArea" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxArea"]
+shape = SubResource("CircleShape2D_infiltrator")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="Polygon2D" parent="Visual"]
+color = Color(0.3, 0.85, 1, 0.3)
+polygon = PackedVector2Array(16, 0, 0, -12, -14, 0, 0, 12)
+
+[node name="Body" type="Polygon2D" parent="Visual"]
+color = Color(0.3, 0.85, 1, 1)
+polygon = PackedVector2Array(12, 0, 0, -8, -10, 0, 0, 8)
+
+[node name="PhaseCore" type="Polygon2D" parent="Visual"]
+color = Color(0.8, 1, 1, 1)
+polygon = PackedVector2Array(5, 0, 0, -3, -4, 0, 0, 3)
+
+[node name="HealthBar" type="Node2D" parent="."]
+position = Vector2(0, -20)
+
+[node name="HealthBarBg" type="ColorRect" parent="HealthBar"]
+offset_left = -14.0
+offset_top = -2.0
+offset_right = 14.0
+offset_bottom = 2.0
+color = Color(0.08, 0.09, 0.12, 0.8)
+
+[node name="HealthBarFill" type="ColorRect" parent="HealthBar"]
+offset_left = -14.0
+offset_top = -2.0
+offset_right = 14.0
+offset_bottom = 2.0
+color = Color(0.2, 0.9, 0.4, 1)

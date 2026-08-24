@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dbxbcma1osm5i"]
+
+[ext_resource type="Script" path="res://scratch/test_damage_runner.gd" id="1_test_dmg"]
+
+[node name="TestDamageRunner" type="Node"]
+script = ExtResource("1_test_dmg")

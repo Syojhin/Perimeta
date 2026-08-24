@@ -1,0 +1,146 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/CreditsModal.gd" id="1_credits_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_credits_panel"]
+bg_color = Color(0.06, 0.08, 0.13, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.85, 1, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_close"]
+bg_color = Color(0.12, 0.28, 0.42, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.85, 1, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="CreditsModal" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_credits_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.08, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(540, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_credits_panel")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "SYSTEM ARCHITECTURE // CREDITS"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="CreditsGrid" type="GridContainer" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="LeadRoleLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Lead Developer & Game Design:"
+
+[node name="LeadNameLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "David Barreiros (Syojhin)"
+
+[node name="EngineRoleLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Core Engine:"
+
+[node name="EngineNameLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Godot Engine 4.3+"
+
+[node name="AudioRoleLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Soundtrack & Audio Engineering:"
+
+[node name="AudioNameLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 13
+text = "Procedural Synthwave Suite"
+
+[node name="VisualsRoleLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Visual Architecture & Shaders:"
+
+[node name="VisualsNameLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CreditsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+text = "Vector CRT Matrix Pipeline"
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_close")
+text = "CLOSE TERMINAL"

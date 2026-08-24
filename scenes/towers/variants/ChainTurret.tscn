@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://c6v2n8axm01ty"]
+
+[ext_resource type="Script" path="res://scripts/core/ChainTurret.gd" id="1_chain_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+radius = 200.0
+
+[node name="ChainTurret" type="Node2D"]
+script = ExtResource("1_chain_script")
+tower_name = "Chain Turret"
+attack_range = 200.0
+fire_rate = 1.2
+damage = 18.0
+cost = 200
+
+[node name="RangeArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeArea"]
+shape = SubResource("CircleShape2D_range")
+
+[node name="BaseVisual" type="Node2D" parent="."]
+
+[node name="OuterBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.22, 0.16, 0.08, 1)
+polygon = PackedVector2Array(-20, -12, 0, -22, 20, -12, 20, 12, 0, 22, -20, 12)
+
+[node name="InnerBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.35, 0.25, 0.12, 1)
+polygon = PackedVector2Array(-14, -8, 0, -15, 14, -8, 14, 8, 0, 15, -14, 8)
+
+[node name="TurretHead" type="Node2D" parent="."]
+
+[node name="TopProng" type="Polygon2D" parent="TurretHead"]
+color = Color(1, 0.75, 0.2, 1)
+polygon = PackedVector2Array(0, -10, 22, -8, 26, -4, 4, -4)
+
+[node name="BottomProng" type="Polygon2D" parent="TurretHead"]
+color = Color(1, 0.75, 0.2, 1)
+polygon = PackedVector2Array(0, 10, 22, 8, 26, 4, 4, 4)
+
+[node name="CenterGenerator" type="Polygon2D" parent="TurretHead"]
+color = Color(1, 0.95, 0.5, 1)
+polygon = PackedVector2Array(-8, -6, 8, -6, 12, 0, 8, 6, -8, 6, -10, 0)
+
+[node name="Muzzle" type="Marker2D" parent="TurretHead"]
+position = Vector2(26, 0)
+
+[node name="LaserBeam" type="Line2D" parent="."]
+visible = false
+width = 3.5
+default_color = Color(1, 0.88, 0.25, 1)
