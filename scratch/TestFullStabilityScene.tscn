@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c3jpeqah6lf0s"]
+
+[ext_resource type="Script" path="res://scratch/TestFullStabilityScene.gd" id="1_stab"]
+
+[node name="TestFullStabilityScene" type="Node2D"]
+script = ExtResource("1_stab")

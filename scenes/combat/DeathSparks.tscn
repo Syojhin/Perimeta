@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://d3yq80jx01x4e"]
+
+[ext_resource type="Script" path="res://scripts/combat/DeathSparks.gd" id="1_sparks_script"]
+
+[sub_resource type="Curve" id="Curve_scale"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.7, 0.8), -0.5, -0.5, 0, 0, Vector2(1, 0), -3.0, 0.0, 0, 0]
+point_count = 3
+
+[node name="DeathSparks" type="CPUParticles2D"]
+z_index = 10
+emitting = false
+amount = 16
+lifetime = 0.45
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 130.0
+initial_velocity_max = 240.0
+angular_velocity_min = -360.0
+angular_velocity_max = 360.0
+scale_amount_min = 3.0
+scale_amount_max = 6.0
+scale_amount_curve = SubResource("Curve_scale")
+color = Color(1.8, 0.5, 0.7, 1)
+script = ExtResource("1_sparks_script")

@@ -1,0 +1,206 @@
+[gd_scene load_steps=9 format=3 uid="uid://b6p4q8l02vx7y"]
+
+[ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="1_build_menu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu_panel"]
+bg_color = Color(0.06, 0.08, 0.13, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.45, 0.65, 0.9)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pulse_btn"]
+bg_color = Color(0.1, 0.28, 0.42, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.8, 1, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cryo_btn"]
+bg_color = Color(0.08, 0.3, 0.38, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.9, 1, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chain_btn"]
+bg_color = Color(0.35, 0.25, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.8, 0.3, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mortar_btn"]
+bg_color = Color(0.32, 0.12, 0.38, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.3, 1, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_railgun_btn"]
+bg_color = Color(0.08, 0.32, 0.35, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 1, 0.9, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sell_btn"]
+bg_color = Color(0.35, 0.15, 0.18, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.3, 0.4, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="BuildMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 310.0
+offset_bottom = 330.0
+script = ExtResource("1_build_menu")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(310, 310)
+layout_mode = 0
+offset_right = 310.0
+offset_bottom = 310.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu_panel")
+
+[node name="Margin" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="PanelContainer/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EmptyModeContainer" type="VBoxContainer" parent="PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="HeaderLabel" type="Label" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "DEPLOY TURRET"
+horizontal_alignment = 1
+
+[node name="PulseButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_pulse_btn")
+text = "PULSE TURRET (100 B)"
+
+[node name="CryoButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_cryo_btn")
+text = "CRYO EMITTER (150 B)"
+
+[node name="ChainButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_chain_btn")
+text = "CHAIN TURRET (200 B)"
+
+[node name="MortarButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_mortar_btn")
+text = "PLASMA MORTAR (300 B)"
+
+[node name="RailgunButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_railgun_btn")
+text = "RAILGUN TURRET (450 B)"
+
+[node name="OccupiedModeContainer" type="VBoxContainer" parent="PanelContainer/Margin/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/Margin/VBox/OccupiedModeContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "PULSE TURRET [ TIER 1/5 ]"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="PanelContainer/Margin/VBox/OccupiedModeContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "DMG: 22 | RNG: 220 | RATE: 1.6/s"
+horizontal_alignment = 1
+
+[node name="PriorityButton" type="Button" parent="PanelContainer/Margin/VBox/OccupiedModeContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_pulse_btn")
+text = "TARGET: FIRST"
+
+[node name="UpgradeButton" type="Button" parent="PanelContainer/Margin/VBox/OccupiedModeContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_pulse_btn")
+text = "UPGRADE TO T2 (+35% DMG) [150 B]"
+
+[node name="SellButton" type="Button" parent="PanelContainer/Margin/VBox/OccupiedModeContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_sell_btn")
+text = "DECOMMISSION (+70 BITS)"
+
+[node name="CloseButton" type="Button" parent="PanelContainer/Margin/VBox"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "DISMISS"

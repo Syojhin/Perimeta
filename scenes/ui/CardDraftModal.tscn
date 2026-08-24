@@ -1,0 +1,242 @@
+[gd_scene format=3 uid="uid://cb548g71w0x8v"]
+
+[ext_resource type="Script" path="res://scripts/ui/CardDraftModal.gd" id="1_draft_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_panel"]
+bg_color = Color(0.08, 0.1, 0.15, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.35, 0.55, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_card"]
+bg_color = Color(0.12, 0.32, 0.5, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.85, 1, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.18, 0.48, 0.72, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.95, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="CardDraftModal" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_draft_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.08, 0.92)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="HeaderContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="HeaderTitle" type="Label" parent="CenterContainer/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "// ROGUELITE CARD DRAFT //"
+horizontal_alignment = 1
+
+[node name="HeaderSubtitle" type="Label" parent="CenterContainer/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "SELECT 1 IN-RUN PERIMETER PROTOCOL TO AUGMENT COMBAT"
+horizontal_alignment = 1
+
+[node name="CardsContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="Card1" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
+custom_minimum_size = Vector2(280, 360)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card1"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TagLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "// OFFENSE"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Chain Overload"
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Chain Turret arcs jump to +2 additional enemy targets."
+autowrap_mode = 3
+
+[node name="SelectButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/Card1/Margin/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "CHOOSE PROTOCOL"
+
+[node name="Card2" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
+custom_minimum_size = Vector2(280, 360)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card2"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TagLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "// TACTICAL"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Cryo Shatter"
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "Slowed enemies take +35% increased damage from all sources."
+autowrap_mode = 3
+
+[node name="SelectButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/Card2/Margin/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "CHOOSE PROTOCOL"
+
+[node name="Card3" type="PanelContainer" parent="CenterContainer/VBoxContainer/CardsContainer"]
+custom_minimum_size = Vector2(280, 360)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_panel")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card3"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TagLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "// OFFENSE"
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Kinetic Velocity"
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin/VBox"]
+layout_mode = 2
+
+[node name="DescLabel" type="Label" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "All turrets gain +25% attack speed for the rest of this run."
+autowrap_mode = 3
+
+[node name="SelectButton" type="Button" parent="CenterContainer/VBoxContainer/CardsContainer/Card3/Margin/VBox"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "CHOOSE PROTOCOL"

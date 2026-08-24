@@ -1,0 +1,234 @@
+[gd_scene format=3 uid="uid://dp7y1u38kx5qw"]
+
+[ext_resource type="Script" path="res://scripts/ui/SkillTree.gd" id="1_skill_tree"]
+[ext_resource type="PackedScene" uid="uid://c83p6ql9nx1yv" path="res://scenes/ui/SkillTreeNode.tscn" id="2_tree_node"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.04, 0.05, 0.08, 0.96)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_respec_btn"]
+bg_color = Color(0.35, 0.15, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.3, 0.4, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_close_btn"]
+bg_color = Color(0.12, 0.22, 0.35, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.8, 1, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="SkillTree" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_skill_tree")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="Header" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 90.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 15
+
+[node name="HBox" type="HBoxContainer" parent="Header"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TitleLabel" type="Label" parent="Header/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "META MATRIX // DAG UPGRADES"
+
+[node name="Spacer" type="Control" parent="Header/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CoresLabel" type="Label" parent="Header/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "META-CORES: 0"
+
+[node name="RespecButton" type="Button" parent="Header/HBox"]
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_respec_btn")
+text = "RESET ALL (100% REFUND)"
+
+[node name="CloseButton" type="Button" parent="Header/HBox"]
+custom_minimum_size = Vector2(120, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_close_btn")
+text = "RETURN"
+
+[node name="BranchHeaders" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 110.0
+offset_bottom = 150.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="OffenseHeader" type="Label" parent="BranchHeaders"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "[ OFFENSE BRANCH ]"
+horizontal_alignment = 1
+
+[node name="UtilityHeader" type="Label" parent="BranchHeaders"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "[ UTILITY BRANCH ]"
+horizontal_alignment = 1
+
+[node name="DefenseHeader" type="Label" parent="BranchHeaders"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "[ DEFENSE BRANCH ]"
+horizontal_alignment = 1
+
+[node name="GraphScroll" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GraphContainer" type="Control" parent="GraphScroll"]
+custom_minimum_size = Vector2(1920, 1250)
+layout_mode = 2
+
+[node name="Nodes" type="Control" parent="GraphScroll/GraphContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="KineticDamageNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 220.0
+offset_top = 40.0
+offset_right = 460.0
+offset_bottom = 190.0
+perk_id = "kinetic_damage"
+
+[node name="OverclockNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 220.0
+offset_top = 280.0
+offset_right = 460.0
+offset_bottom = 430.0
+perk_id = "overclock"
+
+[node name="ChainArcNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 220.0
+offset_top = 520.0
+offset_right = 460.0
+offset_bottom = 670.0
+perk_id = "chain_arc_bounces"
+
+[node name="ElementalMasteryNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 220.0
+offset_top = 760.0
+offset_right = 460.0
+offset_bottom = 910.0
+perk_id = "elemental_mastery"
+
+[node name="SpecialistDoctrineNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 220.0
+offset_top = 1000.0
+offset_right = 460.0
+offset_bottom = 1150.0
+perk_id = "specialist_doctrine"
+
+[node name="SensorArrayNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 840.0
+offset_top = 40.0
+offset_right = 1080.0
+offset_bottom = 190.0
+perk_id = "sensor_array"
+
+[node name="StartingCapitalNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 840.0
+offset_top = 280.0
+offset_right = 1080.0
+offset_bottom = 430.0
+perk_id = "starting_capital"
+
+[node name="DiscountAmmoNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 840.0
+offset_top = 520.0
+offset_right = 1080.0
+offset_bottom = 670.0
+perk_id = "discount_ammo"
+
+[node name="BitDividendNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 840.0
+offset_top = 760.0
+offset_right = 1080.0
+offset_bottom = 910.0
+perk_id = "bit_dividend"
+
+[node name="ReinforcedCoreNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 1460.0
+offset_top = 120.0
+offset_right = 1700.0
+offset_bottom = 270.0
+perk_id = "reinforced_core"
+
+[node name="CryoFrostbiteNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 1460.0
+offset_top = 400.0
+offset_right = 1700.0
+offset_bottom = 550.0
+perk_id = "cryo_frostbite"
+
+[node name="ThermalInsulatorNode" parent="GraphScroll/GraphContainer/Nodes" instance=ExtResource("2_tree_node")]
+offset_left = 1460.0
+offset_top = 680.0
+offset_right = 1700.0
+offset_bottom = 830.0
+perk_id = "thermal_insulator"

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cscoel2tmfens"]
+
+[ext_resource type="Script" path="res://scratch/test_multi_vector_runner.gd" id="1_test_multi"]
+
+[node name="TestMultiVectorRunner" type="Node"]
+script = ExtResource("1_test_multi")

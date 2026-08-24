@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://boe822qdegik7"]
+
+[ext_resource type="Script" path="res://scratch/test_credits_runner.gd" id="1_test_cred"]
+
+[node name="TestCreditsRunner" type="Node"]
+script = ExtResource("1_test_cred")

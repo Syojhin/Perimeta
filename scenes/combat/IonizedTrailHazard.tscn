@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dq6rf48an4ytk"]
+
+[ext_resource type="Script" path="res://scripts/combat/IonizedTrailHazard.gd" id="1_ionized_script"]
+
+[node name="IonizedTrailHazard" type="Node2D"]
+script = ExtResource("1_ionized_script")
+
+[node name="BeamLine" type="Line2D" parent="."]
+width = 6.0
+default_color = Color(0.3, 1.5, 3, 0.6)

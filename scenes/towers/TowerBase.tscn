@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8o7p185n43qf"]
+
+[ext_resource type="Script" path="res://scripts/core/TowerBase.gd" id="1_tower_base"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+radius = 220.0
+
+[node name="TowerBase" type="Node2D"]
+script = ExtResource("1_tower_base")
+
+[node name="RangeArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeArea"]
+shape = SubResource("CircleShape2D_range")
+
+[node name="BaseVisual" type="Node2D" parent="."]
+
+[node name="OuterBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.12, 0.16, 0.24, 1)
+polygon = PackedVector2Array(-20, -12, 0, -22, 20, -12, 20, 12, 0, 22, -20, 12)
+
+[node name="InnerBase" type="Polygon2D" parent="BaseVisual"]
+color = Color(0.18, 0.24, 0.36, 1)
+polygon = PackedVector2Array(-14, -8, 0, -15, 14, -8, 14, 8, 0, 15, -14, 8)
+
+[node name="TurretHead" type="Node2D" parent="."]
+
+[node name="Barrel" type="Polygon2D" parent="TurretHead"]
+color = Color(0.2, 0.7, 0.9, 1)
+polygon = PackedVector2Array(4, -4, 24, -3, 24, 3, 4, 4)
+
+[node name="CenterCap" type="Polygon2D" parent="TurretHead"]
+color = Color(0.35, 0.85, 1, 1)
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[node name="Muzzle" type="Marker2D" parent="TurretHead"]
+position = Vector2(25, 0)
+
+[node name="LaserBeam" type="Line2D" parent="."]
+visible = false
+width = 3.0
+default_color = Color(0.3, 0.9, 1, 1)

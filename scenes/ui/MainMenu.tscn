@@ -1,0 +1,229 @@
+[gd_scene load_steps=8 format=3 uid="uid://bvq7k8m1f3y0g"]
+
+[ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_main_menu_script"]
+[ext_resource type="PackedScene" uid="uid://dp7y1u38kx5qw" path="res://scenes/ui/SkillTree.tscn" id="2_skill_tree"]
+[ext_resource type="PackedScene" uid="uid://cx60v83qmpx1y" path="res://scenes/ui/SettingsModal.tscn" id="3_settings_modal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CreditsModal.tscn" id="4_credits_modal"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 0.8
+glow_strength = 1.0
+glow_bloom = 0.15
+glow_hdr_threshold = 1.0
+glow_blend_mode = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_start"]
+bg_color = Color(0.1, 0.45, 0.65, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.9, 1, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_menu"]
+bg_color = Color(0.08, 0.12, 0.18, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.35, 0.5, 0.7)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.15, 0.22, 0.32, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.8, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main_menu_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.047, 0.051, 0.071, 1)
+
+[node name="Background" type="Node2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="OuterRing" type="Polygon2D" parent="Background"]
+color = Color(0.12, 0.25, 0.4, 0.15)
+polygon = PackedVector2Array(0, -320, 226, -226, 320, 0, 226, 226, 0, 320, -226, 226, -320, 0, -226, -226)
+
+[node name="InnerRing" type="Polygon2D" parent="Background"]
+color = Color(0.2, 0.4, 0.65, 0.12)
+polygon = PackedVector2Array(0, -200, 141, -141, 200, 0, 141, 141, 0, 200, -141, 141, -200, 0, -141, -141)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="TitleBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 56
+text = "P E R I M E T A"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/VBoxContainer/TitleBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.75, 0.9, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "MATHEMATICAL GEOMETRY // ACTIVE DEFENSE ROGUELITE"
+horizontal_alignment = 1
+
+[node name="StatsLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.8, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "HIGH SCORE: 0   //   MAX WAVE: 0   //   META-CORES: 0"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(260, 46)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_start")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "START RUN"
+
+[node name="SkillTreeButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(260, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_menu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "META UPGRADES"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(260, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_menu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "SETTINGS"
+
+[node name="CreditsButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(260, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_menu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "CREDITS"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(260, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 0.8)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_menu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "QUIT"
+
+[node name="LangButton" type="Button" parent="."]
+custom_minimum_size = Vector2(130, 38)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -160.0
+offset_top = 32.0
+offset_right = -30.0
+offset_bottom = 70.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_menu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "[ EN ] | FR"
+
+[node name="DevWatermarkLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -42.0
+offset_right = 400.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.36, 0.88, 0.9, 0.6)
+theme_override_font_sizes/font_size = 14
+text = "PERIMETA // CREATED & ENGINEERED BY DAVID 'SYOJHIN' BARREIROS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SkillTree" parent="." instance=ExtResource("2_skill_tree")]
+visible = false
+layout_mode = 1
+
+[node name="SettingsModal" parent="." instance=ExtResource("3_settings_modal")]
+visible = false
+layout_mode = 1
+
+[node name="CreditsModal" parent="." instance=ExtResource("4_credits_modal")]
+visible = false
+layout_mode = 1

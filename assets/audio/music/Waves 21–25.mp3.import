@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bsygmgg1v2gfc"
+path="res://.godot/imported/Waves 21–25.mp3-e12bb359ae1ff4ab5cff8c354e5cfdd1.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/music/Waves 21–25.mp3"
+dest_files=["res://.godot/imported/Waves 21–25.mp3-e12bb359ae1ff4ab5cff8c354e5cfdd1.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

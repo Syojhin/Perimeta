@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3 uid="uid://dj4n08m51p34e"]
+
+[ext_resource type="Script" path="res://scripts/core/CoreBase.gd" id="1_core_base"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_core"]
+radius = 48.0
+
+[node name="CoreBase" type="Area2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_core_base")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_core")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="ShieldGlow" type="Polygon2D" parent="Visual"]
+color = Color(0.1, 0.8, 0.9, 0.25)
+polygon = PackedVector2Array(-54, 0, -42, -34, -20, -48, 20, -48, 48, -20, 48, 20, 20, 48, -20, 48, -42, 34)
+
+[node name="OuterShield" type="Polygon2D" parent="Visual"]
+color = Color(0.12, 0.7, 0.85, 0.6)
+polygon = PackedVector2Array(-44, 0, -32, -28, -12, -40, 16, -40, 38, -16, 38, 16, 16, 40, -12, 40, -32, 28)
+
+[node name="CoreBody" type="Polygon2D" parent="Visual"]
+color = Color(0.3, 0.9, 1, 1)
+polygon = PackedVector2Array(-24, 0, -16, -18, 14, -22, 26, 0, 14, 22, -16, 18)
+
+[node name="InnerEnergy" type="Polygon2D" parent="Visual"]
+color = Color(0.9, 0.98, 1, 1)
+polygon = PackedVector2Array(-12, 0, 0, -12, 12, 0, 0, 12)
+
+[node name="RepairHint" type="Label" parent="Visual"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -70.0
+offset_top = -68.0
+offset_right = 70.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.08, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 11
+text = "FIELD REPAIR +25 HP
+[300 BITS]"
+horizontal_alignment = 1
+vertical_alignment = 1
