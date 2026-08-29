@@ -1,1 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="124" height="124" x="2" y="2" fill="#363d52" stroke="#212532" stroke-width="4" rx="14"/><g fill="#fff" transform="translate(12.322 12.322)scale(.101)"><path d="M105 673v33q407 354 814 0v-33z"/><path fill="#478cbf" d="m105 673 152 14q12 1 15 14l4 67 132 10 8-61q2-11 15-15h162q13 4 15 15l8 61 132-10 4-67q3-13 15-14l152-14V427q30-39 56-81-35-59-83-108-43 20-82 47-40-37-88-64 7-51 8-102-59-28-123-42-26 43-46 89-49-7-98 0-20-46-46-89-64 14-123 42 1 51 8 102-48 27-88 64-39-27-82-47-48 49-83 108 26 42 56 81zm0 33v39c0 276 813 276 814 0v-39l-134 12-5 69q-2 10-14 13l-162 11q-12 0-16-11l-10-65H446l-10 65q-4 11-16 11l-162-11q-12-3-14-13l-5-69z"/><path d="M483 600c0 34 58 34 58 0v-86c0-34-58-34-58 0z"/><circle cx="725" cy="526" r="90"/><circle cx="299" cy="526" r="90"/></g><g fill="#414042" transform="translate(12.322 12.322)scale(.101)"><circle cx="307" cy="532" r="60"/><circle cx="717" cy="532" r="60"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="perimetaTile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f141d" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0e080d" stop-opacity="0.98"/>
+    </linearGradient>
+
+    <linearGradient id="perimetaRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF007F" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#B000FF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FF007F" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <linearGradient id="perimetaNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF007F"/>
+      <stop offset="50%" stop-color="#E000FF"/>
+      <stop offset="100%" stop-color="#FF0055"/>
+    </linearGradient>
+
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur1"/>
+      <feGaussianBlur stdDeviation="16" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="40" y="40" width="432" height="432" rx="88" fill="url(#perimetaTile)" stroke="url(#perimetaRim)" stroke-width="3.5"/>
+
+  <path d="M 60 120 C 60 76, 76 60, 120 60 L 392 60 C 436 60, 452 76, 452 120 L 452 160 C 320 180, 180 180, 60 160 Z" fill="#ffffff" opacity="0.03"/>
+
+  <g filter="url(#neonGlow)" transform="translate(256, 256) scale(1.05) translate(-256, -256)">
+    <path d="M 205 125 L 205 370 L 335 370" fill="none" stroke="url(#perimetaNeon)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <path d="M 315 155 C 315 115, 195 115, 195 205 C 195 295, 320 250, 320 335 C 320 410, 195 405, 185 365" 
+          fill="none" stroke="url(#perimetaNeon)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <path d="M 215 140 L 215 355 L 320 355" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    <path d="M 305 165 C 305 135, 210 135, 210 205 C 210 280, 305 245, 305 325" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  </g>
+</svg>
