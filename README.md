@@ -1,10 +1,13 @@
 # PERIMETA // VECTOR CRT SYNTHWAVE TOWER DEFENSE
 
+> **✦ Engineered by Syojhin & Lara**  
+> *Vector CRT rogue-lite tower defense built in Godot 4.*
+
 [![Godot Engine](https://img.shields.io/badge/Godot-v4.3%2B-478CBF?style=for-the-badge&logo=godotengine&logoColor=white)](https://godotengine.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/)
-[![Release](https://img.shields.io/badge/Release-v1.0.0-00E5FF?style=for-the-badge)](https://github.com/)
-[![Aesthetic](https://img.shields.io/badge/Style-Neon%20Vector%20CRT-FF007F?style=for-the-badge)](https://github.com/)
-[![License](https://img.shields.io/badge/License-Proprietary-yellow?style=for-the-badge)](https://github.com/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Syojhin/Perimeta)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-00E5FF?style=for-the-badge)](https://github.com/Syojhin/Perimeta/releases)
+[![Aesthetic](https://img.shields.io/badge/Style-Neon%20Vector%20CRT-FF007F?style=for-the-badge)](https://github.com/Syojhin/Perimeta)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](LICENSE)
 
 > **PERIMETA** is a high-octane, neon vector CRT rogue-lite tower defense experience. Command perimeter turret defenses, exploit elemental reaction matrices, draft synergistic boons, and defend the central core against relentless multi-vector robotic assaults.
 
@@ -80,7 +83,7 @@ Inflicting multiple elemental statuses on targets triggers volatile reactions:
 
 ## 📦 Download & How to Play
 
-1. Head to the [Releases](https://github.com/) section and download `Perimeta-v1.0.0-Windows.zip`.
+1. Head to the [Releases](https://github.com/Syojhin/Perimeta/releases) section and download `Perimeta-v1.0.0-Windows.zip`.
 2. Extract the `.zip` archive to any directory on your Windows machine.
 3. Double-click **`Perimeta.exe`** to launch the game.
 4. *No external runtime, installer, or dependencies required.*
@@ -90,6 +93,7 @@ Inflicting multiple elemental statuses on targets triggers volatile reactions:
 ## 👨‍💻 System Architecture & Credits
 
 - **Game Design & Lead Development**: **David Barreiros (Syojhin)**
+- **Engineering & Architecture**: **Syojhin & Lara**
 - **Engine**: **Godot Engine 4.3+ (Standard Build)**
 - **Audio Engineering**: Procedural Synthwave Suite & BGM Matrix
 - **Visual Pipeline**: Vector CRT Shader Matrix & Custom Particle Synthesizers

@@ -3,3 +3,12 @@
 /android/
 build/
 *.tmp
+*.exe
+*.zip
+
+# Agent & graph outputs
+graphify-out/
+.vscode/
+.claude/
+scratch/
+*.py
