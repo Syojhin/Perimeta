@@ -197,7 +197,9 @@ func refresh() -> void:
 					t_name = loc_mgr.call("get_text", "TURRET_RAILGUN_NAME", t_name)
 			
 			if tower.tier >= 5:
-				if tower.infusion_level > 0:
+				if tower.prestige_level > 0:
+					title_label.text = "%s [ P-%s ]" % [t_name.to_upper(), TowerBase.get_roman_numeral(tower.prestige_level)]
+				elif tower.infusion_level > 0:
 					title_label.text = "%s [ T5 MASTER +%d ]" % [t_name.to_upper(), tower.infusion_level]
 				else:
 					title_label.text = "%s [ T5 MASTER ]" % t_name.to_upper()
@@ -214,11 +216,17 @@ func refresh() -> void:
 			var refund: int = tower.get_sell_refund()
 			
 			if tower.tier >= tower.max_tier:
-				# Infinite Overclock Infusion Bit Sink
-				var inf_cost: int = tower.get_infusion_cost()
-				var inf_fmt: String = loc_mgr.call("get_text", "INFUSION_BTN", "INFUSION +%d (+5%% DMG) [%d B]") if loc_mgr else "INFUSION +%d (+5%% DMG) [%d B]"
-				upgrade_btn.text = inf_fmt % [tower.infusion_level + 1, inf_cost]
-				upgrade_btn.disabled = current_bits < inf_cost
+				if tower.prestige_level < tower.MAX_PRESTIGE_LEVEL:
+					var p_cost: int = tower.get_prestige_cost()
+					var next_p: int = tower.prestige_level + 1
+					var roman: String = TowerBase.get_roman_numeral(next_p)
+					upgrade_btn.text = "ASCEND / PRESTIGE [ P-%s ] [%d B]" % [roman, p_cost]
+					upgrade_btn.disabled = current_bits < p_cost
+				else:
+					var inf_cost: int = tower.get_infusion_cost()
+					var inf_fmt: String = loc_mgr.call("get_text", "INFUSION_BTN", "INFUSION +%d (+5%% DMG) [%d B]") if loc_mgr else "INFUSION +%d (+5%% DMG) [%d B]"
+					upgrade_btn.text = inf_fmt % [tower.infusion_level + 1, inf_cost]
+					upgrade_btn.disabled = current_bits < inf_cost
 			elif current_bits < up_cost:
 				if tower.tier == 4:
 					upgrade_btn.text = (loc_mgr.call("get_text", "UPGRADE_T5", "MASTER T5 (%d BITS)") % up_cost) if loc_mgr else "MASTER T5 (%d BITS)" % up_cost

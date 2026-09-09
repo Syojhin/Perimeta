@@ -64,6 +64,7 @@ var snd_upgrade: AudioStreamWAV
 var snd_build: AudioStreamWAV
 var snd_card_pick: AudioStreamWAV
 var snd_ui_click: AudioStreamWAV
+var snd_ascend: AudioStreamWAV
 
 # SFX Dictionary for string-based play_sfx lookups
 var _sfx_dict: Dictionary = {}
@@ -474,10 +475,12 @@ func _synthesize_sfx() -> void:
 	snd_build = _synth_build()
 	snd_card_pick = _synth_card_pick()
 	snd_ui_click = _synth_ui_click()
+	snd_ascend = _synth_ascend()
 
 	_sfx_dict = {
 		"laser": snd_laser,
 		"shoot": snd_shoot,
+		"ascend": snd_ascend,
 		"hit": snd_hit,
 		"coin": snd_coin,
 		"perk": snd_perk,
@@ -814,10 +817,46 @@ func _synth_build() -> AudioStreamWAV:
 	return wav
 
 
+func _synth_ascend() -> AudioStreamWAV:
+	var duration: float = 0.45
+	var samples: int = int(MIX_RATE * duration)
+	var data: PackedByteArray = PackedByteArray()
+	data.resize(samples * 2)
+	
+	for i in range(samples):
+		var t: float = float(i) / float(samples)
+		var freq: float = lerpf(320.0, 1280.0, pow(t, 1.4))
+		var envelope: float = 1.0 - pow(t, 2.0)
+		var sample_val: float = (sin(t * freq * TAU) + sin(t * freq * 2.0 * TAU) * 0.4) * envelope * 0.45
+		var int16_val: int = int(clampf(sample_val, -1.0, 1.0) * 32767.0)
+		data.encode_s16(i * 2, int16_val)
+		
+	var wav: AudioStreamWAV = AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = MIX_RATE
+	wav.stereo = false
+	wav.data = data
+	return wav
+
+
+## Calculate procedural pitch shift for a prestige turret (down -2% per 5 ranks up to -8% at P20).
+static func get_prestige_pitch_scale(prestige_level: int) -> float:
+	var bracket: int = mini(4, int(maxi(0, prestige_level) / 5))
+	return 1.0 - (float(bracket) * 0.02)
+
+
+## Trigger celebratory ascending SFX drop on tower prestige ascension.
+func play_prestige_ascension_sfx() -> void:
+	play_sound(snd_ascend if snd_ascend else snd_upgrade, 0.0, -2.0, 1.0)
+
+
 # --- Signal Listeners ---
 
-func _on_tower_fired(_tower: Node, _target: Node) -> void:
-	play_sound(snd_laser, 0.08, -8.0)
+func _on_tower_fired(tower: Node, _target: Node) -> void:
+	var base_pitch: float = 1.0
+	if tower and "prestige_level" in tower:
+		base_pitch = get_prestige_pitch_scale(int(tower.get("prestige_level")))
+	play_sound(snd_laser, 0.08, -8.0, base_pitch)
 
 
 func _on_enemy_damaged(_enemy: Node, _amount: float, _hp: float) -> void:

@@ -24,11 +24,11 @@ var is_occupied: bool:
 	get:
 		return state == SocketState.OCCUPIED and is_instance_valid(current_tower)
 
-@onready var socket_ring: Line2D = $Visual/Ring
-@onready var socket_pad: Polygon2D = $Visual/Pad
-@onready var center_dot: Polygon2D = $Visual/CenterDot
-@onready var lock_label: Label = $Visual/LockLabel
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var socket_ring: Line2D = get_node_or_null("Visual/Ring")
+@onready var socket_pad: Polygon2D = get_node_or_null("Visual/Pad")
+@onready var center_dot: Polygon2D = get_node_or_null("Visual/CenterDot")
+@onready var lock_label: Label = get_node_or_null("Visual/LockLabel")
+@onready var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
 
 const COLOR_LOCKED_IDLE: Color = Color(0.4, 0.2, 0.15, 0.45)
 const COLOR_LOCKED_HOVER: Color = Color(1.0, 0.55, 0.2, 0.9)
@@ -102,6 +102,29 @@ func build_tower(tower_scene: PackedScene) -> TowerBase:
 	inst.tree_exited.connect(_on_tower_freed)
 	_update_visual_state()
 	return inst
+
+
+## Get the formatted upgrade or prestige ascension prompt for the current occupying turret.
+func get_upgrade_prompt() -> String:
+	if not is_occupied or not current_tower:
+		return ""
+	if current_tower.tier >= 5:
+		if current_tower.prestige_level < current_tower.MAX_PRESTIGE_LEVEL:
+			var next_rank: int = current_tower.prestige_level + 1
+			var roman: String = TowerBase.get_roman_numeral(next_rank)
+			var cost: int = current_tower.get_prestige_cost()
+			return "ASCEND / PRESTIGE [ P-%s ] (%d B)" % [roman, cost]
+		else:
+			return "MAX PRESTIGE [ P-XX ]"
+	else:
+		return "UPGRADE T%d (%d B)" % [current_tower.tier + 1, current_tower.get_upgrade_cost()]
+
+
+## Perform upgrade or prestige ascension on the current occupying turret.
+func upgrade_tower() -> bool:
+	if not is_occupied or not current_tower:
+		return false
+	return current_tower.upgrade()
 
 
 ## Clear and remove any existing tower on this socket.
