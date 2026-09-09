@@ -5,6 +5,7 @@ extends Control
 
 signal restart_requested()
 signal open_skill_tree_requested()
+signal return_to_menu_requested()
 
 @onready var header_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HeaderLabel
 @onready var wave_label: Label = $PanelContainer/MarginContainer/VBoxContainer/StatsGrid/WaveLabel
@@ -23,15 +24,19 @@ signal open_skill_tree_requested()
 
 @onready var skill_tree_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/ButtonHBox/SkillTreeButton
 @onready var restart_btn: Button = $PanelContainer/MarginContainer/VBoxContainer/ButtonHBox/RestartButton
+@onready var menu_btn: Button = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/ButtonHBox/MenuButton")
 
 var _cached_stats: Dictionary = {}
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if skill_tree_btn:
 		skill_tree_btn.pressed.connect(_on_skill_tree_pressed)
 	if restart_btn:
 		restart_btn.pressed.connect(_on_restart_pressed)
+	if menu_btn:
+		menu_btn.pressed.connect(_on_menu_pressed)
 	
 	EventBus.game_over.connect(_on_game_over)
 	if LocalizationManager:
@@ -63,6 +68,8 @@ func _update_localization() -> void:
 		skill_tree_btn.text = LocalizationManager.get_text("UI_SKILL_TREE", "META UPGRADES")
 	if restart_btn:
 		restart_btn.text = LocalizationManager.get_text("UI_RESTART_RUN", "RESTART RUN")
+	if menu_btn:
+		menu_btn.text = LocalizationManager.get_text("UI_MAIN_MENU", "MAIN MENU")
 
 
 ## Populate run statistics and display modal.
@@ -84,6 +91,11 @@ func display_stats(stats: Dictionary) -> void:
 		total_cores_val.text = str(stats.get("total_meta_cores", GlobalState.meta_cores))
 	
 	show()
+	get_tree().paused = true
+
+
+func close() -> void:
+	hide()
 
 
 func _on_game_over(stats: Dictionary) -> void:
@@ -96,5 +108,14 @@ func _on_skill_tree_pressed() -> void:
 
 
 func _on_restart_pressed() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
 	hide()
 	restart_requested.emit()
+
+
+func _on_menu_pressed() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	hide()
+	return_to_menu_requested.emit()

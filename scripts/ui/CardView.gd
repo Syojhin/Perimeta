@@ -46,6 +46,14 @@ func _ready() -> void:
 		update_view()
 
 
+func reset_hover() -> void:
+	_is_hovered = false
+	if _hover_tween and _hover_tween.is_valid():
+		_hover_tween.kill()
+		_hover_tween = null
+	scale = Vector2.ONE
+
+
 ## Re-render the visual presentation, styling, and text of the card.
 func update_view() -> void:
 	if not card_data:

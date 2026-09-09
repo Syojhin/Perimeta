@@ -413,3 +413,8 @@ func recycle_all_active() -> void:
 	for entry: Dictionary in _mortar_pool:
 		if entry.get("in_use", false):
 			_return_mortar_shell(entry)
+
+
+## Public API to flush and reclaim all active pooled combat objects.
+func clear_all_pools() -> void:
+	recycle_all_active()

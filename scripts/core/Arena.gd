@@ -99,8 +99,9 @@ func _ready() -> void:
 	if camera:
 		_camera_origin = camera.position
 	
-	if current_map_data == null and ResourceLoader.exists("res://resources/maps/Sector01_Perimeter.tres"):
-		current_map_data = load("res://resources/maps/Sector01_Perimeter.tres") as MapData
+	var map_path: String = GlobalState.selected_map_path if GlobalState and not GlobalState.selected_map_path.is_empty() else "res://resources/maps/Sector01_Perimeter.tres"
+	if ResourceLoader.exists(map_path):
+		current_map_data = load(map_path) as MapData
 	
 	if current_map_data:
 		load_map(current_map_data)
@@ -405,9 +406,7 @@ func _on_pause_restart_pressed() -> void:
 
 func _on_pause_menu_pressed() -> void:
 	_toggle_pause()
-	get_tree().paused = false
-	Engine.time_scale = 1.0
-	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+	_return_to_menu()
 
 
 func _setup_boss_events() -> void:
@@ -644,6 +643,8 @@ func _setup_hud_connections() -> void:
 			game_over_modal.restart_requested.connect(_restart_run)
 		if not game_over_modal.open_skill_tree_requested.is_connected(_on_open_skill_tree_pressed):
 			game_over_modal.open_skill_tree_requested.connect(_on_open_skill_tree_pressed)
+		if game_over_modal.has_signal("return_to_menu_requested") and not game_over_modal.return_to_menu_requested.is_connected(_return_to_menu):
+			game_over_modal.return_to_menu_requested.connect(_return_to_menu)
 	
 	if victory_modal:
 		if not victory_modal.endless_mode_selected.is_connected(_on_endless_mode_selected):
@@ -689,25 +690,44 @@ func _update_pause_menu_localization() -> void:
 		menu_btn.text = LocalizationManager.get_text("UI_MAIN_MENU", "MAIN MENU")
 
 
-func _restart_run() -> void:
-	if game_over_modal:
-		game_over_modal.visible = false
-	if build_menu:
-		build_menu.close()
-	if card_draft_modal:
-		card_draft_modal.close()
-	if skill_tree_modal:
-		skill_tree_modal.close()
-	if boss_health_container:
+func _cleanup_all_modals() -> void:
+	for modal in [game_over_modal, build_menu, card_draft_modal, skill_tree_modal, settings_modal, victory_modal]:
+		if is_instance_valid(modal):
+			if modal.has_method("close"):
+				modal.close()
+			else:
+				modal.visible = false
+	if is_instance_valid(boss_health_container):
 		boss_health_container.visible = false
-	if boss_alert_banner:
+	if is_instance_valid(boss_alert_banner):
 		boss_alert_banner.visible = false
-	if sector_alert_banner:
+	if is_instance_valid(sector_alert_banner):
 		sector_alert_banner.visible = false
-	if pause_menu:
+	if is_instance_valid(pause_menu):
 		pause_menu.visible = false
-	if victory_modal:
-		victory_modal.visible = false
+
+
+func _return_to_menu() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	_cleanup_all_modals()
+	if NodePool and NodePool.has_method("clear_all_pools"):
+		NodePool.clear_all_pools()
+	elif NodePool and NodePool.has_method("recycle_all_active"):
+		NodePool.recycle_all_active()
+	SaveManager.save_game()
+	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+
+func _restart_run() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	_cleanup_all_modals()
+	
+	if NodePool and NodePool.has_method("clear_all_pools"):
+		NodePool.clear_all_pools()
+	elif NodePool and NodePool.has_method("recycle_all_active"):
+		NodePool.recycle_all_active()
 	
 	# Clear / reset all sockets to initial run state
 	if sockets_container:

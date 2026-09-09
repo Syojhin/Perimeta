@@ -15,6 +15,7 @@ var run_modifiers: Dictionary = {} # Maps stat_key (String) -> value (float)
 var super_charge: float = 0.0 # 0.0 to 100.0
 var is_resonance_active: bool = false
 var game_speed: float = 1.0
+var selected_map_path: String = "res://resources/maps/Sector01_Perimeter.tres"
 
 # --- Persistent Meta State ---
 var meta_cores: int = 0:

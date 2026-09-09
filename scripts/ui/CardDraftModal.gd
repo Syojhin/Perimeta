@@ -32,6 +32,7 @@ static var CARD_POOL: Array:
 
 var _card_registry: Array[BoonCardData] = []
 var _current_options: Array[BoonCardData] = []
+var _entrance_tween: Tween = null
 
 
 func _ready() -> void:
@@ -119,9 +120,22 @@ func open_draft(offered_cards: Array = []) -> void:
 	if cards_container:
 		cards_container.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		cards_container.scale = Vector2(0.92, 0.92)
-		var tween: Tween = create_tween()
-		tween.tween_property(cards_container, "modulate:a", 1.0, 0.2)
-		tween.parallel().tween_property(cards_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK)
+		if _entrance_tween and _entrance_tween.is_valid():
+			_entrance_tween.kill()
+		_entrance_tween = create_tween()
+		_entrance_tween.tween_property(cards_container, "modulate:a", 1.0, 0.2)
+		_entrance_tween.parallel().tween_property(cards_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK)
+
+
+## Safely closes the draft modal, killing active entrance and card hover tweens.
+func close() -> void:
+	visible = false
+	if _entrance_tween and _entrance_tween.is_valid():
+		_entrance_tween.kill()
+		_entrance_tween = null
+	for node: CardView in [card1_node, card2_node, card3_node]:
+		if is_instance_valid(node) and node.has_method("reset_hover"):
+			node.reset_hover()
 
 
 func _update_header_labels() -> void:
@@ -266,7 +280,7 @@ func _on_card_view_selected(card: BoonCardData) -> void:
 	if not card.target_stat.is_empty():
 		GlobalState.add_run_modifier(card.target_stat, card.value)
 		
-	visible = false
+	close()
 	get_tree().paused = false
 	
 	var card_dict: Dictionary = card.to_dict()
