@@ -212,12 +212,10 @@ func _spawn_cluster_bomblets(origin: Vector2, bomblet_damage: float) -> void:
 					bomblet.queue_free()
 				_detonate_mini_bomblet(bomblet_target, bomblet_damage)
 			)
-		
-		# Fallback fail-safe timer
-		tree.create_timer(0.4, false).timeout.connect(func() -> void:
+		else:
 			if is_instance_valid(bomblet):
 				bomblet.queue_free()
-		)
+			_detonate_mini_bomblet(bomblet_target, bomblet_damage)
 
 
 func _detonate_mini_bomblet(pos: Vector2, dmg: float) -> void:
@@ -244,12 +242,9 @@ func _detonate_mini_bomblet(pos: Vector2, dmg: float) -> void:
 			if is_instance_valid(shock):
 				shock.queue_free()
 		)
-	
-	# Fallback fail-safe timer
-	tree.create_timer(0.3, false).timeout.connect(func() -> void:
+	else:
 		if is_instance_valid(shock):
 			shock.queue_free()
-	)
 	
 	# Damage targets in mini-blast
 	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
@@ -304,9 +299,6 @@ func _spawn_explosion_fx(pos: Vector2, radius: float) -> void:
 			if is_instance_valid(shockwave):
 				shockwave.queue_free()
 		)
-	
-	# Fallback fail-safe timer
-	tree.create_timer(0.4, false).timeout.connect(func() -> void:
+	else:
 		if is_instance_valid(shockwave):
 			shockwave.queue_free()
-	)

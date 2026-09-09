@@ -182,14 +182,11 @@ func _draw_hyper_velocity_beam(start_pos: Vector2, end_pos: Vector2) -> void:
 			if is_instance_valid(core_beam):
 				core_beam.queue_free()
 		)
-	
-	# Fallback fail-safe timer
-	tree.create_timer(0.3, false).timeout.connect(func() -> void:
+	else:
 		if is_instance_valid(glow_beam):
 			glow_beam.queue_free()
 		if is_instance_valid(core_beam):
 			core_beam.queue_free()
-	)
 
 
 func _spawn_ionized_trail_hazard(start_pos: Vector2, end_pos: Vector2) -> void:

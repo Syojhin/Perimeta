@@ -13,9 +13,9 @@ const PREWARM_DEATH_SPARKS: int = 32
 const PREWARM_SHOCKWAVES: int = 16
 const PREWARM_MORTAR_SHELLS: int = 8
 
-var _damage_pool: Array[DamageNumber] = []
-var _sparks_pool: Array[DeathSparks] = []
-var _shockwave_pool: Array[Line2D] = []
+var _damage_pool: Array = []
+var _sparks_pool: Array = []
+var _shockwave_pool: Array = []
 var _mortar_pool: Array[Dictionary] = [] # Array of { "root": Node2D, "dot": Polygon2D, "trail": Line2D, "in_use": bool }
 
 var _pool_container: Node2D = null
@@ -45,6 +45,8 @@ func _prewarm_damage_numbers() -> void:
 		var inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
 		inst.visible = false
 		inst.process_mode = Node.PROCESS_MODE_DISABLED
+		if inst.is_in_group("damage_popups"):
+			inst.remove_from_group("damage_popups")
 		_pool_container.add_child(inst)
 		_damage_pool.append(inst)
 
@@ -53,9 +55,9 @@ func _prewarm_damage_numbers() -> void:
 func get_damage_number(target_parent: Node = null) -> DamageNumber:
 	var inst: DamageNumber = null
 	while not _damage_pool.is_empty():
-		var candidate: DamageNumber = _damage_pool.pop_back()
-		if is_instance_valid(candidate):
-			inst = candidate
+		var candidate: Variant = _damage_pool.pop_back()
+		if candidate != null and is_instance_valid(candidate) and not (candidate as Node).is_queued_for_deletion():
+			inst = candidate as DamageNumber
 			break
 	
 	if not inst:
@@ -80,8 +82,11 @@ func get_damage_number(target_parent: Node = null) -> DamageNumber:
 
 ## Return a DamageNumber back to the inactive pool.
 func return_damage_number(inst: DamageNumber) -> void:
-	if not is_instance_valid(inst):
+	if not is_instance_valid(inst) or inst.is_queued_for_deletion():
 		return
+	
+	if inst.is_in_group("damage_popups"):
+		inst.remove_from_group("damage_popups")
 	
 	if _damage_pool.has(inst):
 		return
@@ -100,6 +105,10 @@ func return_damage_number(inst: DamageNumber) -> void:
 ## High-convenience spawn helper that sets up and fires combat floating text in a single zero-alloc call.
 func spawn_damage_number(pos: Vector2, text: String, color: Color, is_crit: bool = false, target_parent: Node = null) -> DamageNumber:
 	var inst: DamageNumber = get_damage_number(target_parent)
+	if not inst:
+		inst = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
+		var p: Node = target_parent if is_instance_valid(target_parent) else (_pool_container if is_instance_valid(_pool_container) else self)
+		p.add_child(inst)
 	inst.spawn(pos, text, color, is_crit)
 	return inst
 
@@ -120,9 +129,9 @@ func _prewarm_death_sparks() -> void:
 func get_death_sparks(target_parent: Node = null) -> DeathSparks:
 	var inst: DeathSparks = null
 	while not _sparks_pool.is_empty():
-		var candidate: DeathSparks = _sparks_pool.pop_back()
-		if is_instance_valid(candidate):
-			inst = candidate
+		var candidate: Variant = _sparks_pool.pop_back()
+		if candidate != null and is_instance_valid(candidate) and not (candidate as Node).is_queued_for_deletion():
+			inst = candidate as DeathSparks
 			break
 			
 	if not inst:
@@ -147,7 +156,7 @@ func get_death_sparks(target_parent: Node = null) -> DeathSparks:
 
 ## Return DeathSparks back to the inactive pool.
 func return_death_sparks(inst: DeathSparks) -> void:
-	if not is_instance_valid(inst):
+	if not is_instance_valid(inst) or inst.is_queued_for_deletion():
 		return
 		
 	if _sparks_pool.has(inst):
@@ -194,9 +203,9 @@ func _prewarm_shockwaves() -> void:
 func spawn_shockwave(pos: Vector2, radius: float, fx_color: Color, duration: float = 0.18) -> void:
 	var ring: Line2D = null
 	while not _shockwave_pool.is_empty():
-		var candidate: Line2D = _shockwave_pool.pop_back()
-		if is_instance_valid(candidate):
-			ring = candidate
+		var candidate: Variant = _shockwave_pool.pop_back()
+		if candidate != null and is_instance_valid(candidate) and not (candidate as Node).is_queued_for_deletion():
+			ring = candidate as Line2D
 			break
 			
 	if not ring:
@@ -239,7 +248,7 @@ func spawn_shockwave(pos: Vector2, radius: float, fx_color: Color, duration: flo
 
 
 func _return_shockwave(ring: Line2D) -> void:
-	if not is_instance_valid(ring):
+	if not is_instance_valid(ring) or ring.is_queued_for_deletion():
 		return
 	ring.visible = false
 	ring.process_mode = Node.PROCESS_MODE_DISABLED
