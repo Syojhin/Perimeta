@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/core/TowerBase.gd" id="1_pulse_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+resource_local_to_scene = true
 radius = 220.0
 
 [node name="PulseTurret" type="Node2D"]

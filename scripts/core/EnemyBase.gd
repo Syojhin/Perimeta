@@ -188,31 +188,9 @@ func _trigger_elemental_aoe(radius: float, dmg: float, fx_color: Color) -> void:
 	if not tree:
 		return
 	
-	# Expanding shockwave visual
-	var shockwave: Line2D = Line2D.new()
-	shockwave.top_level = true
-	shockwave.global_position = global_position
-	shockwave.width = 3.5
-	shockwave.default_color = fx_color
-	for i in range(20 + 1):
-		var ang: float = (float(i) / 20.0) * TAU
-		shockwave.add_point(Vector2(cos(ang), sin(ang)) * 6.0)
-	tree.root.add_child(shockwave)
-	
-	var tween: Tween = create_tween()
-	if tween:
-		tween.tween_property(shockwave, "scale", Vector2(radius / 6.0, radius / 6.0), 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tween.parallel().tween_property(shockwave, "modulate:a", 0.0, 0.18)
-		tween.chain().tween_callback(func() -> void:
-			if is_instance_valid(shockwave):
-				shockwave.queue_free()
-		)
-	
-	# Fallback fail-safe timer
-	tree.create_timer(0.35, false).timeout.connect(func() -> void:
-		if is_instance_valid(shockwave):
-			shockwave.queue_free()
-	)
+	# Pooled expanding shockwave visual
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_shockwave(global_position, radius, fx_color, 0.18)
 	
 	# Damage nearby enemies
 	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
@@ -225,15 +203,16 @@ func _trigger_elemental_aoe(radius: float, dmg: float, fx_color: Color) -> void:
 
 
 func _spawn_reaction_text(text_str: String, color: Color) -> void:
-	if not DAMAGE_NUMBER_SCENE:
-		return
-	var dmg_inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
-	if not dmg_inst:
-		return
 	var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
-	target_parent.add_child(dmg_inst)
-	dmg_inst.global_position = global_position + Vector2(0, -28)
-	dmg_inst.setup_text(text_str, color, true)
+	var spawn_pos: Vector2 = global_position + Vector2(0, -28)
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_damage_number(spawn_pos, text_str, color, true, target_parent)
+	elif DAMAGE_NUMBER_SCENE:
+		var dmg_inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
+		if dmg_inst:
+			target_parent.add_child(dmg_inst)
+			dmg_inst.global_position = spawn_pos
+			dmg_inst.setup_text(text_str, color, true)
 
 
 ## Apply damage to this enemy, trigger damage popups, and check death.
@@ -272,17 +251,20 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 
 
 func _spawn_damage_number(amount: float, is_crit: bool, color_override: Color) -> void:
-	if not DAMAGE_NUMBER_SCENE:
-		return
-	
-	var dmg_inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
-	if not dmg_inst:
-		return
-	
-	dmg_inst.global_position = global_position + Vector2(randf_range(-10.0, 10.0), -20.0)
+	var spawn_pos: Vector2 = global_position + Vector2(randf_range(-10.0, 10.0), -20.0)
+	var text_str: String = str(roundi(amount)) if amount >= 1.0 else str(snappedf(amount, 0.1))
+	if is_crit and not text_str.ends_with("!"):
+		text_str += "!"
 	var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
-	target_parent.add_child(dmg_inst)
-	dmg_inst.setup(amount, color_override, is_crit)
+	
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_damage_number(spawn_pos, text_str, color_override, is_crit, target_parent)
+	elif DAMAGE_NUMBER_SCENE:
+		var dmg_inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
+		if dmg_inst:
+			dmg_inst.global_position = spawn_pos
+			target_parent.add_child(dmg_inst)
+			dmg_inst.setup(amount, color_override, is_crit)
 
 
 ## Handle enemy death and reward bounty.
@@ -316,17 +298,15 @@ func _trigger_cryo_shatter() -> void:
 
 
 func _spawn_death_sparks() -> void:
-	if not DEATH_SPARKS_SCENE:
-		return
-	
-	var sparks: DeathSparks = DEATH_SPARKS_SCENE.instantiate() as DeathSparks
-	if not sparks:
-		return
-	
 	var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
-	target_parent.add_child(sparks)
-	sparks.global_position = global_position
-	sparks.trigger(primary_color)
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_death_sparks(global_position, primary_color, target_parent)
+	elif DEATH_SPARKS_SCENE:
+		var sparks: DeathSparks = DEATH_SPARKS_SCENE.instantiate() as DeathSparks
+		if sparks:
+			target_parent.add_child(sparks)
+			sparks.global_position = global_position
+			sparks.trigger(primary_color)
 
 
 ## Trigger core breach when enemy finishes the path.

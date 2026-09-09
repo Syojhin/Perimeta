@@ -24,12 +24,12 @@ var _has_spawned_reinforcements: bool = false
 func _ready() -> void:
 	enemy_name = "Titan Core"
 	var wave_tier: int = maxi(1, int(floorf(float(GlobalState.current_wave) / 5.0)))
-	var tier_mult: float = pow(1.4, float(wave_tier - 1))
+	var tier_mult: float = pow(2.15, float(wave_tier - 1))
 	max_hp = 2500.0 * tier_mult
 	current_hp = max_hp
 	move_speed = 36.0
 	core_damage = 45.0
-	bounty = int(350.0 * tier_mult)
+	bounty = int(350.0 * (1.0 + float(wave_tier - 1) * 0.5))
 	primary_color = Color(1.0, 0.22, 0.45, 1.0)
 	
 	add_to_group("enemies")

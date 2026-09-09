@@ -212,11 +212,12 @@ func _on_enemy_removed(_enemy: Node, _param2: Variant = null) -> void:
 		get_tree().call_group("hazards", "queue_free")
 		get_tree().call_group("damage_popups", "queue_free")
 		
-		# Bit Dividend meta perk: +5% compound interest on unspent Bits per wave
+		# Bit Dividend meta perk: +5% compound interest on unspent Bits per wave (capped at max +150 Bits to eliminate runaway compounding)
 		var dividend_lvl: int = GlobalState.get_perk_level("bit_dividend")
 		if dividend_lvl > 0 and GlobalState.run_currency > 0:
 			var interest_rate: float = 0.05 * float(dividend_lvl)
-			var interest_bits: int = int(round(float(GlobalState.run_currency) * interest_rate))
+			var raw_interest: int = int(round(float(GlobalState.run_currency) * interest_rate))
+			var interest_bits: int = mini(150, raw_interest)
 			if interest_bits > 0:
 				GlobalState.add_currency(interest_bits)
 				

@@ -11,6 +11,12 @@ enum TargetPriority {
 	LAST
 }
 
+@export var tower_data: TowerData = null:
+	set(value):
+		tower_data = value
+		if tower_data:
+			_apply_tower_data()
+
 @export var tower_name: String = "Pulse Turret"
 @export var attack_range: float = 220.0:
 	set(value):
@@ -46,10 +52,13 @@ var is_hovered: bool = false
 
 
 func _ready() -> void:
-	_base_range = attack_range
-	_base_fire_rate = fire_rate
-	_base_damage = damage
-	total_invested_bits = cost
+	if tower_data:
+		_apply_tower_data()
+	else:
+		_base_range = attack_range
+		_base_fire_rate = fire_rate
+		_base_damage = damage
+		total_invested_bits = cost
 	
 	refresh_stats()
 	EventBus.perks_updated.connect(_on_perks_updated)
@@ -64,6 +73,22 @@ func _ready() -> void:
 	EventBus.tower_placed.emit(self)
 
 
+## Initialize baseline stats and pricing from an injected TowerData resource.
+func _apply_tower_data() -> void:
+	if not tower_data:
+		return
+	tower_name = tower_data.display_name
+	cost = tower_data.base_cost
+	damage = tower_data.base_damage
+	fire_rate = tower_data.base_fire_rate
+	attack_range = tower_data.base_range
+	_base_range = attack_range
+	_base_fire_rate = fire_rate
+	_base_damage = damage
+	total_invested_bits = cost
+	_update_range_shape()
+
+
 ## Refresh effective stats from GlobalState meta perks.
 func refresh_stats() -> void:
 	attack_range = GlobalState.get_stat("tower_range", _base_range)
@@ -76,6 +101,10 @@ func refresh_stats() -> void:
 func get_upgrade_cost() -> int:
 	if tier >= max_tier:
 		return get_infusion_cost()
+	if tower_data and not tower_data.tier_upgrades.is_empty():
+		for up_entry: Dictionary in tower_data.tier_upgrades:
+			if int(up_entry.get("tier", 0)) == tier + 1:
+				return int(up_entry.get("cost", 0))
 	match tier:
 		1: return 150
 		2: return 350
@@ -106,13 +135,24 @@ func upgrade() -> bool:
 	total_invested_bits += up_cost
 	tier += 1
 	
-	if tier == 5:
+	var dmg_mult: float = 1.35
+	var rng_mult: float = 1.15
+	var matched_custom_upgrade: bool = false
+	if tower_data and not tower_data.tier_upgrades.is_empty():
+		for up_entry: Dictionary in tower_data.tier_upgrades:
+			if int(up_entry.get("tier", 0)) == tier:
+				dmg_mult = float(up_entry.get("damage_mult", 1.35))
+				rng_mult = float(up_entry.get("range_mult", 1.15))
+				matched_custom_upgrade = true
+				break
+	
+	if not matched_custom_upgrade and tier == 5:
 		# Tier 5 Master
 		_base_damage *= 2.0
 		_base_range *= 1.30
 	else:
-		_base_damage *= 1.35
-		_base_range *= 1.15
+		_base_damage *= dmg_mult
+		_base_range *= rng_mult
 		
 	refresh_stats()
 	_show_upgrade_effect()
@@ -300,6 +340,10 @@ func _show_attack_visual(target_position: Vector2) -> void:
 
 
 func _show_upgrade_effect() -> void:
+	if turret_head and is_instance_valid(turret_head):
+		var tier_scale: float = 1.0 + (float(tier - 1) * 0.08)
+		turret_head.scale = Vector2(tier_scale, tier_scale)
+		
 	if tier == 5:
 		modulate = Color(3.5, 3.0, 1.0, 1.0) # Golden Master flash
 		var tween: Tween = create_tween()

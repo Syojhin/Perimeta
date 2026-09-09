@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/core/PlasmaMortar.gd" id="1_mortar_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_mortar"]
+resource_local_to_scene = true
 radius = 300.0
 
 [node name="PlasmaMortar" type="Node2D"]

@@ -83,13 +83,19 @@ func _attempt_field_repair() -> void:
 
 
 func _show_repair_fx() -> void:
-	if DAMAGE_NUMBER_SCENE:
+	var spawn_pos: Vector2 = global_position + Vector2(0, -50)
+	var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
+	var text_str: String = "+%d" % int(repair_amount)
+	var text_color: Color = Color(0.2, 1.0, 0.5, 1.0)
+	
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_damage_number(spawn_pos, text_str, text_color, true, target_parent)
+	elif DAMAGE_NUMBER_SCENE:
 		var num: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
 		if num:
-			num.global_position = global_position + Vector2(0, -50)
-			var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
+			num.global_position = spawn_pos
 			target_parent.add_child(num)
-			num.setup(repair_amount, Color(0.2, 1.0, 0.5, 1.0), true, "+%d" % int(repair_amount))
+			num.setup(repair_amount, text_color, true, text_str)
 	
 	if visual_root:
 		visual_root.modulate = Color(0.3, 3.0, 1.0, 1.0)
