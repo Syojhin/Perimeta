@@ -3,18 +3,24 @@ extends Node2D
 
 ## Main combat arena manager in Perimeta. Manages 4-vector dynamic entrances, speed controls, active Coin Gun, EMP Super Shockwave, Card Drafts, Pause & Settings menus.
 
+const BUILD_SOCKET_SCENE: PackedScene = preload("res://scenes/combat/BuildSocket.tscn")
+
+@export var current_map_data: MapData = null
+var dynamic_paths: Array[Path2D] = []
+
 @onready var camera: Camera2D = $Camera2D
 @onready var tracks_container: Node2D = $Tracks
 @onready var path_visuals_container: Node2D = $PathVisuals
-@onready var path_north: Path2D = $Tracks/Path_North
-@onready var path_south: Path2D = $Tracks/Path_South
-@onready var path_east: Path2D = $Tracks/Path_East
-@onready var path_west: Path2D = $Tracks/Path_West
 @onready var wave_spawner: WaveSpawner = $WaveSpawner
 @onready var core_base: CoreBase = $CoreBase
 @onready var sockets_container: Node2D = $Sockets
 @onready var cursor_laser: Line2D = $CursorLaser
 @onready var shockwave_ring: Line2D = $ShockwaveRing
+
+var path_north: Path2D = null
+var path_south: Path2D = null
+var path_east: Path2D = null
+var path_west: Path2D = null
 
 # UI Quick-HUD elements
 @onready var wave_label: Label = $CanvasLayer/HUD/TopBar/WaveLabel
@@ -93,8 +99,15 @@ func _ready() -> void:
 	if camera:
 		_camera_origin = camera.position
 	
-	_setup_path_visualization()
-	_setup_sockets()
+	if current_map_data == null and ResourceLoader.exists("res://resources/maps/Sector01_Perimeter.tres"):
+		current_map_data = load("res://resources/maps/Sector01_Perimeter.tres") as MapData
+	
+	if current_map_data:
+		load_map(current_map_data)
+	else:
+		_setup_path_visualization()
+		_setup_sockets()
+	
 	_setup_hud_connections()
 	_setup_speed_controls()
 	_setup_pause_menu()
@@ -102,6 +115,113 @@ func _ready() -> void:
 	
 	# Start run lifecycle
 	GlobalState.start_run()
+
+
+## Dynamically loads and configures the arena using a MapData resource.
+## Clears existing paths and sockets cleanly without leaking nodes.
+## Constructs Path2D and Line2D curves dynamically from path_data.
+## Instantiates and positions BuildSocket nodes dynamically from socket_transforms.
+## Repositions CoreBase to core_position and routes WaveSpawner across dynamic paths.
+func load_map(map_data: MapData) -> void:
+	if not map_data:
+		return
+	
+	current_map_data = map_data
+	
+	# 1. Clear existing tracks cleanly without leaking nodes
+	if tracks_container:
+		for child: Node in tracks_container.get_children():
+			tracks_container.remove_child(child)
+			child.queue_free()
+	
+	# 2. Clear existing path visuals cleanly
+	if path_visuals_container:
+		for child: Node in path_visuals_container.get_children():
+			path_visuals_container.remove_child(child)
+			child.queue_free()
+	
+	# 3. Clear existing sockets cleanly
+	if sockets_container:
+		for child: Node in sockets_container.get_children():
+			if child is BuildSocket:
+				(child as BuildSocket).clear_socket()
+			sockets_container.remove_child(child)
+			child.queue_free()
+	
+	# 4. Construct Path2D and Line2D curves dynamically from path_data
+	dynamic_paths.clear()
+	var path_aliases: Array[String] = ["Path_North", "Path_South", "Path_West", "Path_East"]
+	var visual_aliases: Array[String] = ["PathVisual_North", "PathVisual_South", "PathVisual_West", "PathVisual_East"]
+	
+	if tracks_container:
+		for i: int in range(map_data.path_data.size()):
+			var curve: Curve2D = Curve2D.new()
+			for pt: Vector2 in map_data.path_data[i]:
+				curve.add_point(pt)
+			
+			var path_node: Path2D = Path2D.new()
+			if map_data.map_id == "sector_01_perimeter" and i < path_aliases.size():
+				path_node.name = path_aliases[i]
+			else:
+				path_node.name = "Path_%02d" % (i + 1)
+			path_node.curve = curve
+			tracks_container.add_child(path_node)
+			dynamic_paths.append(path_node)
+			
+			# Construct corresponding Line2D visual representation
+			if path_visuals_container:
+				var visual_line: Line2D = Line2D.new()
+				if map_data.map_id == "sector_01_perimeter" and i < visual_aliases.size():
+					visual_line.name = visual_aliases[i]
+				else:
+					visual_line.name = "PathVisual_%02d" % (i + 1)
+				visual_line.width = 5.0
+				visual_line.default_color = Color(0.14, 0.28, 0.42, 0.6)
+				visual_line.begin_cap_mode = Line2D.LINE_CAP_BOX
+				visual_line.end_cap_mode = Line2D.LINE_CAP_BOX
+				
+				var baked_pts: PackedVector2Array = curve.get_baked_points()
+				for pt: Vector2 in baked_pts:
+					visual_line.add_point(pt)
+				path_visuals_container.add_child(visual_line)
+	
+	# Cache directional paths for convenience / legacy access
+	path_north = dynamic_paths[0] if dynamic_paths.size() > 0 else null
+	path_south = dynamic_paths[1] if dynamic_paths.size() > 1 else null
+	path_west = dynamic_paths[2] if dynamic_paths.size() > 2 else null
+	path_east = dynamic_paths[3] if dynamic_paths.size() > 3 else null
+	
+	# 5. Instantiate and position BuildSocket nodes dynamically from socket_transforms
+	if sockets_container and BUILD_SOCKET_SCENE:
+		for i: int in range(map_data.socket_transforms.size()):
+			var xform: Transform2D = map_data.socket_transforms[i]
+			var socket: BuildSocket = BUILD_SOCKET_SCENE.instantiate() as BuildSocket
+			socket.name = "Socket_%02d" % (i + 1)
+			socket.transform = xform
+			
+			# First 4 inner sockets unlocked by default; outer sockets tiered Bit costs
+			if i < 4:
+				socket.initial_state = BuildSocket.SocketState.UNLOCKED_EMPTY
+				socket.unlock_cost = 0
+			else:
+				socket.initial_state = BuildSocket.SocketState.LOCKED
+				socket.unlock_cost = 200 + ((i - 4) * 50)
+				
+			socket.socket_selected.connect(_on_socket_selected)
+			sockets_container.add_child(socket)
+	
+	# 6. Reposition the Core base plate to core_position
+	if core_base:
+		core_base.position = map_data.core_position
+	
+	# 7. Apply ambient background / environment tint
+	var bg: CanvasItem = get_node_or_null("Background") as CanvasItem
+	if bg:
+		bg.modulate = map_data.ambient_tint
+	
+	# 8. Route WaveSpawner wave path assignments across the dynamic paths
+	if wave_spawner:
+		wave_spawner.set_dynamic_paths(dynamic_paths)
 
 
 func _process(delta: float) -> void:
@@ -430,6 +550,23 @@ func _find_enemy_near_position(pos: Vector2, max_radius: float) -> EnemyBase:
 
 
 func _setup_path_visualization() -> void:
+	if not path_visuals_container or not tracks_container:
+		return
+	
+	if not dynamic_paths.is_empty():
+		for i in range(dynamic_paths.size()):
+			var p: Path2D = dynamic_paths[i]
+			if not is_instance_valid(p) or not p.curve:
+				continue
+			var line: Line2D = path_visuals_container.get_node_or_null("PathVisual_%02d" % (i + 1)) as Line2D
+			if not line:
+				line = path_visuals_container.get_node_or_null(p.name.replace("Path_", "PathVisual_")) as Line2D
+			if line:
+				line.clear_points()
+				for pt: Vector2 in p.curve.get_baked_points():
+					line.add_point(pt)
+		return
+	
 	var paths: Array[Path2D] = [path_north, path_south, path_west, path_east]
 	var line_names: Array[String] = ["PathVisual_North", "PathVisual_South", "PathVisual_West", "PathVisual_East"]
 	
