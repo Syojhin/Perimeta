@@ -22,6 +22,8 @@ const PHASE_ENEMY_SCENE: PackedScene = preload("res://scenes/enemies/variants/Ph
 @export var spawn_interval: float = 0.65
 @export var auto_start: bool = true
 
+var dynamic_paths: Array[Path2D] = []
+
 var current_wave: int = 0
 var enemies_remaining_to_spawn: int = 0
 var active_enemies: int = 0
@@ -72,8 +74,55 @@ func _process(delta: float) -> void:
 			_spawn_timer = spawn_interval if not is_boss_wave else spawn_interval * 1.3
 
 
+## Assigns dynamic arena paths generated from MapData.
+func set_dynamic_paths(paths: Array[Path2D]) -> void:
+	dynamic_paths.clear()
+	for p: Path2D in paths:
+		if is_instance_valid(p):
+			dynamic_paths.append(p)
+	
+	if dynamic_paths.size() >= 1:
+		target_path = dynamic_paths[0]
+		path_north = dynamic_paths[0]
+	if dynamic_paths.size() >= 2:
+		path_south = dynamic_paths[1]
+	if dynamic_paths.size() >= 3:
+		path_east = dynamic_paths[2]
+	if dynamic_paths.size() >= 4:
+		path_west = dynamic_paths[3]
+
+
 ## Returns active entrance lanes for the current wave tier.
 func get_active_paths_for_wave(wave: int) -> Array[Path2D]:
+	if not dynamic_paths.is_empty():
+		var valid_paths: Array[Path2D] = []
+		for p: Path2D in dynamic_paths:
+			if is_instance_valid(p):
+				valid_paths.append(p)
+		
+		if valid_paths.is_empty():
+			return []
+		
+		# Single-path layout (e.g. Spiral Reactor): all spawns follow single path
+		if valid_paths.size() == 1:
+			return [valid_paths[0]]
+		
+		# Dual-path layout (e.g. Bifurcated Nexus): alternate both lanes from Wave 1
+		if valid_paths.size() == 2:
+			return valid_paths
+		
+		# 3+ paths (e.g. Perimeter 4-way): tiered activation
+		var active: Array[Path2D] = []
+		active.append(valid_paths[0])
+		if wave >= 6 and valid_paths.size() >= 2:
+			active.append(valid_paths[1])
+		if wave >= 11 and valid_paths.size() >= 3:
+			active.append(valid_paths[2])
+		if wave >= 16 and valid_paths.size() >= 4:
+			active.append(valid_paths[3])
+		return active
+
+	# Fallback for static scene setup
 	var paths: Array[Path2D] = []
 	if is_instance_valid(path_north):
 		paths.append(path_north)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MapData" format=3]
+
+[ext_resource type="Script" path="res://resources/maps/MapData.gd" id="1_3tgun"]
+
+[resource]
+script = ExtResource("1_3tgun")
+map_id = "sector_03_bifurcated_nexus"
+display_name = "Sector 03: Bifurcated Nexus"
+description = "Dual parallel switchback lanes flanking a central socket plateau defending the core nexus."
+path_data = Array[PackedVector2Array]([PackedVector2Array(120, 180, 1800, 180, 1800, 300, 320, 300, 320, 420, 960, 420, 960, 480), PackedVector2Array(1800, 900, 120, 900, 120, 780, 1600, 780, 1600, 660, 960, 660, 960, 600)])
+socket_transforms = Array[Transform2D]([Transform2D(1, 0, 0, 1, 840, 460), Transform2D(1, 0, 0, 1, 1080, 460), Transform2D(1, 0, 0, 1, 840, 620), Transform2D(1, 0, 0, 1, 1080, 620), Transform2D(1, 0, 0, 1, 960, 360), Transform2D(1, 0, 0, 1, 960, 720), Transform2D(1, 0, 0, 1, 740, 540), Transform2D(1, 0, 0, 1, 1180, 540), Transform2D(1, 0, 0, 1, 740, 420), Transform2D(1, 0, 0, 1, 1180, 420), Transform2D(1, 0, 0, 1, 740, 660), Transform2D(1, 0, 0, 1, 1180, 660), Transform2D(1, 0, 0, 1, 600, 540), Transform2D(1, 0, 0, 1, 1320, 540), Transform2D(1, 0, 0, 1, 960, 260), Transform2D(1, 0, 0, 1, 960, 820)])
+ambient_tint = Color(0.08, 0.15, 0.16, 1)
+hazard_type = "napalm"

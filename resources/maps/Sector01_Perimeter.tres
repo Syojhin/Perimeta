@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MapData" format=3]
+
+[ext_resource type="Script" path="res://resources/maps/MapData.gd" id="1_laekg"]
+
+[resource]
+script = ExtResource("1_laekg")
+map_id = "sector_01_perimeter"
+display_name = "Sector 01: Perimeter"
+description = "Standard 4-vector perimeter defense. Quadrant breach points converge on the central core."
+path_data = Array[PackedVector2Array]([PackedVector2Array(120, 140, 1800, 140, 1800, 240, 300, 240, 300, 340, 960, 340, 960, 470), PackedVector2Array(1800, 900, 120, 900, 120, 800, 1620, 800, 1620, 700, 960, 700, 960, 610), PackedVector2Array(120, 440, 120, 680, 240, 680, 240, 380, 650, 380, 650, 540, 890, 540), PackedVector2Array(1800, 600, 1800, 360, 1680, 360, 1680, 660, 1270, 660, 1270, 540, 1030, 540)])
+socket_transforms = Array[Transform2D]([Transform2D(1, 0, 0, 1, 820, 440), Transform2D(1, 0, 0, 1, 1100, 440), Transform2D(1, 0, 0, 1, 820, 640), Transform2D(1, 0, 0, 1, 1100, 640), Transform2D(1, 0, 0, 1, 550, 190), Transform2D(1, 0, 0, 1, 1050, 190), Transform2D(1, 0, 0, 1, 1550, 190), Transform2D(1, 0, 0, 1, 370, 850), Transform2D(1, 0, 0, 1, 870, 850), Transform2D(1, 0, 0, 1, 1370, 850), Transform2D(1, 0, 0, 1, 460, 290), Transform2D(1, 0, 0, 1, 1460, 290), Transform2D(1, 0, 0, 1, 460, 750), Transform2D(1, 0, 0, 1, 1460, 750), Transform2D(1, 0, 0, 1, 180, 540), Transform2D(1, 0, 0, 1, 1740, 480)])
+ambient_tint = Color(0.08, 0.12, 0.18, 1)
