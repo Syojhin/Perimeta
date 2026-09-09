@@ -34,6 +34,11 @@ var nanite_stacks: int = 0
 var nanite_timer: float = 0.0
 var _nanite_tick_acc: float = 0.0
 
+# Elite Composable Modifiers
+var active_modifiers: Array[EnemyModifier] = []
+var is_gravity_immune: bool = false
+var command_aura_timer: float = 0.0
+
 @onready var hitbox_area: Area2D = $HitboxArea
 @onready var visual_node: Node2D = $Visual
 @onready var health_bar_fill: ColorRect = $HealthBar/HealthBarFill
@@ -83,6 +88,19 @@ func _process(delta: float) -> void:
 				_nanite_tick_acc = 0.0
 				var dot_dmg: float = float(nanite_stacks) * 4.0
 				take_damage(dot_dmg, false, Color("#76FF03"))
+
+	# Handle allied Command Aura buff (overrides slow, grants +25% move speed & gravity immunity)
+	if command_aura_timer > 0.0:
+		command_aura_timer = maxf(0.0, command_aura_timer - delta)
+		if stun_timer <= 0.0:
+			speed_multiplier = maxf(speed_multiplier, 1.25)
+		is_gravity_immune = true
+	else:
+		is_gravity_immune = false
+
+	# Process active elite modifiers
+	for mod: EnemyModifier in active_modifiers:
+		mod.on_physics_process(delta)
 
 	# Smoothly return lateral gravitational displacement to path center
 	if absf(v_offset) > 0.1:
@@ -239,11 +257,28 @@ func _spawn_reaction_text(text_str: String, color: Color) -> void:
 
 
 ## Apply damage to this enemy, trigger damage popups, and check death.
-func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF")) -> void:
+func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF"), damage_type: String = "") -> void:
 	if is_dead:
 		return
 	
+	# Determine damage type if not explicitly provided
+	var dtype: String = damage_type
+	if dtype.is_empty():
+		if color_override == Color("#76FF03"): dtype = "corrosive"
+		elif color_override == Color("#64D2FF"): dtype = "cryo"
+		elif color_override == Color("#00F0FF") or color_override == Color("#A26CF8"): dtype = "electro"
+		elif color_override == Color("#BF55EC"): dtype = "gravity"
+		elif color_override == Color("#FF6B2B"): dtype = "plasma"
+		elif color_override == Color("#00E5FF"): dtype = "piercing"
+		else: dtype = "kinetic"
+		
 	var final_amount: float = amount
+	
+	# Pass through active elite composable modifiers (e.g. Phase Shift evasion, Reactive Plating resistance)
+	for mod: EnemyModifier in active_modifiers:
+		final_amount = mod.on_take_damage(final_amount, dtype)
+		if final_amount <= 0.0:
+			return # Fully negated / evaded
 	
 	# Anti-Spawn Camping Grace: 80% damage reduction for first 0.5s off the gate
 	if get_parent() is Path2D and progress_ratio < 0.04:
@@ -298,6 +333,10 @@ func die() -> void:
 		return
 	is_dead = true
 	
+	# Process active elite modifiers on_death hooks (e.g. Spore Split)
+	for mod: EnemyModifier in active_modifiers:
+		mod.on_death()
+	
 	# Corrosive Nanite Detonation
 	if nanite_stacks > 0:
 		var outbreak_active: bool = GlobalState.run_modifiers.get("nanite_virulent_outbreak", 0.0) > 0.0
@@ -312,6 +351,29 @@ func die() -> void:
 	_spawn_death_sparks()
 	EventBus.enemy_died.emit(self, bounty)
 	queue_free()
+
+
+## Attach an elite modifier to this enemy.
+func add_modifier(mod: EnemyModifier) -> void:
+	if not mod or active_modifiers.has(mod):
+		return
+	active_modifiers.append(mod)
+	mod.init_modifier(self)
+
+
+## Convenience instantiation helper for typed modifiers.
+func add_modifier_by_type(mtype: EnemyModifier.ModifierType) -> EnemyModifier:
+	var mod: EnemyModifier = EnemyModifier.new(mtype)
+	add_modifier(mod)
+	return mod
+
+
+## Apply command aura buff from an allied commander.
+func apply_command_aura_buff(duration: float = 0.25) -> void:
+	command_aura_timer = maxf(command_aura_timer, duration)
+	is_gravity_immune = true
+	if stun_timer <= 0.0:
+		speed_multiplier = maxf(speed_multiplier, 1.25)
 
 
 ## Apply nanite infection stacks to target enemy.

@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 			EventBus.boss_damaged.emit(current_hp, max_hp, true)
 
 
-func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF")) -> void:
+func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF"), damage_type: String = "") -> void:
 	if is_dead:
 		return
 	
@@ -89,7 +89,7 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 		final_damage *= (1.0 - shield_damage_reduction)
 		final_color = Color(0.4, 0.9, 1.0, 1.0) # Deflected cyan
 	
-	super.take_damage(final_damage, is_crit, final_color)
+	super.take_damage(final_damage, is_crit, final_color, damage_type)
 	EventBus.boss_damaged.emit(current_hp, max_hp, phase_shield_active)
 	
 	# Titan Reinforcements threshold at 50% HP
