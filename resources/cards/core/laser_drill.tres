@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "laser_drill"
+title = "Laser Drill"
+description = "Coin Gun cursor shots deal +50% increased damage."
+rarity = 0
+target_tower_id = ""
+required_tower_id = ""
+target_stat = "coin_gun_damage_mult"
+value = 0.5
+is_multiplier = true

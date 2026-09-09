@@ -380,7 +380,7 @@ func play_sfx(sound_name: String, pitch_range: Vector2 = Vector2.ONE, volume_db:
 
 
 ## Play an audio stream through the round-robin SFX pool with safe guards, cooldown throttling, and voice capping.
-func play_sound(stream: AudioStreamWAV, pitch_random: float = 0.06, volume_db: float = -6.0) -> void:
+func play_sound(stream: AudioStreamWAV, pitch_random: float = 0.06, volume_db: float = -6.0, base_pitch: float = 1.0) -> void:
 	if not stream:
 		return
 	
@@ -407,8 +407,19 @@ func play_sound(stream: AudioStreamWAV, pitch_random: float = 0.06, volume_db: f
 		
 		_hit_trigger_timestamps.append(now_msec)
 	
-	var pitch: float = 1.0 + randf_range(-pitch_random, pitch_random)
+	var pitch: float = base_pitch + randf_range(-pitch_random, pitch_random)
 	_play_stream_on_pool(stream, pitch, volume_db)
+
+
+## Play audio trigger on card hover with pitch modulated by card rarity.
+func play_card_hover(rarity: int = 0) -> void:
+	var base_p: float = 1.0
+	match rarity:
+		0: base_p = 1.0 # Common
+		1: base_p = 1.25 # Rare
+		2: base_p = 1.5 # Epic
+		3: base_p = 1.8 # Overclock
+	play_sound(snd_perk if snd_perk else snd_coin, 0.02, -10.0, base_p)
 
 
 func _play_stream_on_pool(stream: AudioStream, pitch: float, volume_db: float) -> void:

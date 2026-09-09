@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "cryo_shatter"
+title = "Cryo Shatter"
+description = "Slowed enemies take +35% increased damage from all sources."
+rarity = 1
+target_tower_id = "cryo_turret"
+required_tower_id = "cryo_turret"
+target_stat = "slow_damage_mult"
+value = 0.35
+is_multiplier = true

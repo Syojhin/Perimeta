@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "chain_overload"
+title = "Chain Overload"
+description = "Chain Turret arcs jump to +2 additional enemy targets."
+rarity = 1
+target_tower_id = "chain_turret"
+required_tower_id = "chain_turret"
+target_stat = "chain_bounces"
+value = 2.0
+is_multiplier = false
