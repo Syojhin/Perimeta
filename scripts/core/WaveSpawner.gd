@@ -192,6 +192,10 @@ func _spawn_enemy() -> void:
 				enemy_instance.max_hp *= hp_scale
 				enemy_instance.current_hp = enemy_instance.max_hp
 				enemy_instance.bounty = int(enemy_instance.bounty * (1.0 + (current_wave * 0.15)))
+				
+				# Roll composable elite modifiers starting at Wave 7
+				var is_elite: bool = chosen_scene in [SHIELD_ENEMY_SCENE, BREACHER_ENEMY_SCENE, PHASE_ENEMY_SCENE, GOLIATH_ENEMY_SCENE]
+				roll_modifiers_for_enemy(enemy_instance, current_wave, is_elite)
 	
 	if not enemy_instance:
 		return
@@ -202,6 +206,31 @@ func _spawn_enemy() -> void:
 	
 	if enemies_remaining_to_spawn <= 0:
 		is_spawning = false
+
+
+## Rolls and attaches elite modifiers to an enemy based on wave progression.
+## Base 15% chance starting at Wave 7, +5% per wave tier, dual-modifier elites on Wave 18+.
+func roll_modifiers_for_enemy(enemy: EnemyBase, wave: int, is_elite: bool = true) -> void:
+	if wave < 7 or not enemy or not is_elite:
+		return
+	
+	var tier_index: int = maxi(0, int((wave - 6) / 5))
+	var modifier_chance: float = 0.15 + float(tier_index) * 0.05
+	
+	if randf() <= modifier_chance:
+		var available_types: Array[int] = [
+			EnemyModifier.ModifierType.PHASE_SHIFT,
+			EnemyModifier.ModifierType.REACTIVE_PLATING,
+			EnemyModifier.ModifierType.COMMAND_AURA,
+			EnemyModifier.ModifierType.SPORE_SPLIT
+		]
+		available_types.shuffle()
+		
+		enemy.add_modifier_by_type(available_types[0])
+		
+		# Dual-modifier roll on Wave 18+ (35% chance for a second distinct modifier)
+		if wave >= 18 and randf() <= 0.35:
+			enemy.add_modifier_by_type(available_types[1])
 
 
 func _on_enemy_removed(_enemy: Node, _param2: Variant = null) -> void:

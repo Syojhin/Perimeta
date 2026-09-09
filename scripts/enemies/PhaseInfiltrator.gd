@@ -47,7 +47,7 @@ func _process(delta: float) -> void:
 				tween.tween_property(visual_node, "modulate", Color(0.3, 0.9, 1.0, 0.2), 0.2)
 
 
-func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF")) -> void:
+func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF"), damage_type: String = "") -> void:
 	if is_dead:
 		return
 	
@@ -55,4 +55,4 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 	if is_cloaked:
 		final_dmg *= 0.20 # 80% damage reduction while phase cloaked
 	
-	super.take_damage(final_dmg, is_crit, color_override)
+	super.take_damage(final_dmg, is_crit, color_override, damage_type)

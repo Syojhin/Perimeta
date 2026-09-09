@@ -61,8 +61,9 @@ func fire_at(target: EnemyBase) -> void:
 
 func _spawn_gravity_well(pos: Vector2) -> void:
 	var tree: SceneTree = get_tree()
-	if not tree or not tree.current_scene:
-		return
+	var target_parent: Node = tree.current_scene if (tree and tree.current_scene) else get_parent()
+	if not target_parent:
+		target_parent = self
 		
 	var well: GravityWell = GravityWell.new()
 	well.global_position = pos
@@ -79,7 +80,7 @@ func _spawn_gravity_well(pos: Vector2) -> void:
 	well.tick_damage = GlobalState.get_stat("tower_damage", _base_damage)
 	well.can_pull_heavy = can_pull_heavy
 	
-	tree.current_scene.add_child(well)
+	target_parent.add_child(well)
 
 
 ## In-world Micro-Singularity Field Node
@@ -140,6 +141,8 @@ class GravityWell extends Node2D:
 					
 				# Apply inward gravitational displacement to non-bosses
 				if enemy is BossEnemy:
+					continue
+				if enemy.is_gravity_immune:
 					continue
 				if not can_pull_heavy and enemy.get_script() and "Goliath" in enemy.get_script().resource_path:
 					continue
