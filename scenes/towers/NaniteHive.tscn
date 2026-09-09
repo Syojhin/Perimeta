@@ -1,0 +1,62 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/NaniteHive.gd" id="1_nanite_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hive"]
+resource_local_to_scene = true
+radius = 200.0
+
+[node name="NaniteHive" type="Node2D"]
+script = ExtResource("1_nanite_script")
+tower_name = "Nanite Hive"
+attack_range = 200.0
+fire_rate = 3.5
+damage = 8.0
+cost = 260
+rotation_speed = 16.0
+
+[node name="RangeArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeArea"]
+shape = SubResource("CircleShape2D_hive")
+
+[node name="Base" type="Node2D" parent="."]
+
+[node name="BasePlate" type="Polygon2D" parent="Base"]
+color = Color(0.04, 0.1, 0.06, 1)
+polygon = PackedVector2Array(0, -18, 16, -9, 16, 9, 0, 18, -16, 9, -16, -9)
+
+[node name="BaseTrim" type="Polygon2D" parent="Base"]
+color = Color(0.2, 0.8, 0.3, 0.7)
+polygon = PackedVector2Array(0, -14, 12, -7, 12, 7, 0, 14, -12, 7, -12, -7)
+
+[node name="TurretHead" type="Node2D" parent="."]
+
+[node name="HiveCore" type="Polygon2D" parent="TurretHead"]
+color = Color(0.07, 0.18, 0.1, 1)
+polygon = PackedVector2Array(-8, -8, 8, -8, 10, 0, 8, 8, -8, 8)
+
+[node name="CellLeft" type="Polygon2D" parent="TurretHead"]
+position = Vector2(4, -6)
+color = Color(0.46, 1, 0.01, 1)
+polygon = PackedVector2Array(0, -3, 6, 0, 0, 3, -6, 0)
+
+[node name="CellRight" type="Polygon2D" parent="TurretHead"]
+position = Vector2(4, 6)
+color = Color(0.46, 1, 0.01, 1)
+polygon = PackedVector2Array(0, -3, 6, 0, 0, 3, -6, 0)
+
+[node name="CellCenter" type="Polygon2D" parent="TurretHead"]
+position = Vector2(10, 0)
+color = Color(0.7, 1, 0.35, 1)
+polygon = PackedVector2Array(0, -4, 5, 0, 0, 4, -5, 0)
+
+[node name="Muzzle" type="Marker2D" parent="TurretHead"]
+position = Vector2(16, 0)
+
+[node name="LaserBeam" type="Line2D" parent="."]
+visible = false
+width = 2.5
+default_color = Color(0.46, 1, 0.01, 1)

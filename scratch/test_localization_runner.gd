@@ -84,13 +84,20 @@ func _ready() -> void:
 	# 8. Test CardDraftModal Dynamic UI Updates
 	var draft_modal: CardDraftModal = arena.get_node("CanvasLayer/CardDraftModal") as CardDraftModal
 	assert(draft_modal != null, "CardDraftModal must exist in Arena")
+	var chain_card = null
+	for c in CardDraftModal.CARD_POOL:
+		if c.get("id") == "chain_overload":
+			chain_card = c
+			break
+	assert(chain_card != null, "chain_overload card must exist in CARD_POOL")
+	
 	draft_modal.open_draft([
+		chain_card,
 		CardDraftModal.CARD_POOL[0],
-		CardDraftModal.CARD_POOL[1],
-		CardDraftModal.CARD_POOL[2]
+		CardDraftModal.CARD_POOL[1]
 	])
 	
-	var title_lbl: Label = draft_modal.card1_node.get_node("Margin/VBox/TitleLabel") as Label
+	var title_lbl: Label = draft_modal.card1_node.title_label
 	assert(title_lbl.text == "Chain Overload", "Card 1 title should be 'Chain Overload'")
 	
 	LocalizationManager.set_language("fr")
@@ -109,5 +116,10 @@ func _ready() -> void:
 	assert(node_kinetic.title_label.text == "Kinetic Amplifier", "Perk title should dynamically translate to English")
 	print("✔ SkillTree dynamic localization reactive updates verified")
 	
+	main_menu.free()
+	settings.free()
+	arena.free()
+	
 	print("=== ALL BILINGUAL LOCALIZATION TESTS PASSED ===")
-	get_tree().quit()
+	await get_tree().process_frame
+	get_tree().quit(0)

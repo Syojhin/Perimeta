@@ -8,6 +8,23 @@ signal card_selected(card_data: Dictionary)
 
 const CARDS_DIR: String = "res://resources/cards/core/"
 
+## Legacy compatibility accessor for external scripts/tests
+static var CARD_POOL: Array:
+	get:
+		var cards: Array = []
+		var dir: DirAccess = DirAccess.open(CARDS_DIR)
+		if dir:
+			dir.list_dir_begin()
+			var file_name: String = dir.get_next()
+			while file_name != "":
+				if file_name.ends_with(".tres"):
+					var res: Resource = load(CARDS_DIR + file_name)
+					if res:
+						cards.append(res.to_dict() if res.has_method("to_dict") else res)
+				file_name = dir.get_next()
+			dir.list_dir_end()
+		return cards
+
 @onready var cards_container: HBoxContainer = $CenterContainer/VBoxContainer/CardsContainer
 @onready var card1_node: CardView = $CenterContainer/VBoxContainer/CardsContainer/Card1
 @onready var card2_node: CardView = $CenterContainer/VBoxContainer/CardsContainer/Card2
@@ -154,6 +171,12 @@ func _get_turret_id(tower: TowerBase) -> String:
 		return "chain_turret"
 	if tower is RailgunTurret:
 		return "railgun_turret"
+	if tower is SingularityPrism:
+		return "singularity_prism"
+	if tower is TeslaLattice:
+		return "tesla_lattice"
+	if tower is NaniteHive:
+		return "nanite_hive"
 	return "pulse_turret"
 
 
