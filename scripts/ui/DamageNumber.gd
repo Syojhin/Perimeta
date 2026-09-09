@@ -9,11 +9,14 @@ var _active_tween: Tween = null
 
 
 func _ready() -> void:
-	add_to_group("damage_popups")
+	pass
 
 
 ## Initialize and launch floating combat text animation from a pooled or new instance.
 func spawn(pos: Vector2, text_str: String, text_color: Color = Color.WHITE, is_crit: bool = false) -> void:
+	if not is_in_group("damage_popups"):
+		add_to_group("damage_popups")
+
 	if not label:
 		label = $Label if has_node("Label") else null
 	
@@ -51,6 +54,12 @@ func _recycle() -> void:
 	if _active_tween and _active_tween.is_valid():
 		_active_tween.kill()
 		_active_tween = null
+		
+	if is_in_group("damage_popups"):
+		remove_from_group("damage_popups")
+		
+	if is_queued_for_deletion():
+		return
 		
 	visible = false
 	var pool: Node = get_node_or_null("/root/NodePool")

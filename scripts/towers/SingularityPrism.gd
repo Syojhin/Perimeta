@@ -38,7 +38,7 @@ func _process(delta: float) -> void:
 
 
 func fire_at(target: EnemyBase) -> void:
-	if not is_instance_valid(target) or target.is_dead:
+	if not is_instance_valid(target) or target.is_queued_for_deletion() or target.is_dead:
 		return
 		
 	EventBus.tower_fired.emit(self, target)
@@ -124,12 +124,12 @@ class GravityWell extends Node2D:
 			return
 			
 		var r_sq: float = radius * radius
-		var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+		var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 		for node: Node in enemies:
-			if not (node is EnemyBase) or not is_instance_valid(node) or node.is_queued_for_deletion():
+			if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
 				continue
 			var enemy: EnemyBase = node as EnemyBase
-			if enemy.is_dead:
+			if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
 				continue
 				
 			var to_well: Vector2 = global_position - enemy.global_position
@@ -137,7 +137,12 @@ class GravityWell extends Node2D:
 			if dist_sq <= r_sq:
 				# Apply periodic damage tick
 				if do_tick:
+					if not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
+						continue
 					enemy.take_damage(tick_damage, false, Color("#BF55EC"))
+					
+				if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
+					continue
 					
 				# Apply inward gravitational displacement to non-bosses
 				if enemy is BossEnemy:
@@ -157,6 +162,8 @@ class GravityWell extends Node2D:
 					var across_path: float = pull_dir.dot(right_dir)
 					var step: float = pull_speed * delta
 					
+					if not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
+						continue
 					enemy.progress = maxf(0.0, enemy.progress + along_path * step)
 					enemy.v_offset = clampf(enemy.v_offset + across_path * step, -80.0, 80.0)
 					

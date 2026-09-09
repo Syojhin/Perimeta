@@ -135,22 +135,25 @@ func _process_reactive_plating(delta: float) -> void:
 func _process_command_aura(delta: float) -> void:
 	_aura_pulse += delta * 4.0
 	if is_instance_valid(indicator_node):
-		indicator_node.queue_redraw()
+		for child in indicator_node.get_children():
+			if child is CommandAuraVisual:
+				child.pulse = _aura_pulse
+				child.queue_redraw()
 		
 	var tree: SceneTree = enemy.get_tree()
 	if not tree:
 		return
 		
 	var r_sq: float = AURA_RADIUS * AURA_RADIUS
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	for node: Node in enemies:
-		if not (node is EnemyBase) or node == enemy or not is_instance_valid(node):
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase) or node == enemy:
 			continue
 		var minion: EnemyBase = node as EnemyBase
-		if minion.is_dead:
+		if not is_instance_valid(minion) or minion.is_queued_for_deletion() or minion.is_dead:
 			continue
 			
-		if enemy.global_position.distance_squared_to(minion.global_position) <= r_sq:
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and enemy.global_position.distance_squared_to(minion.global_position) <= r_sq:
 			# Grant +25% move speed and immunity to Singularity gravitational pull
 			minion.apply_command_aura_buff(0.25)
 
@@ -158,10 +161,15 @@ func _process_command_aura(delta: float) -> void:
 func _process_spore_split(delta: float) -> void:
 	_spore_pulse += delta * 5.0
 	if is_instance_valid(indicator_node):
-		indicator_node.queue_redraw()
+		for child in indicator_node.get_children():
+			if child is SporeSplitVisual:
+				child.pulse = _spore_pulse
+				child.queue_redraw()
 
 
 func _trigger_spore_split() -> void:
+	if not is_instance_valid(enemy):
+		return
 	var path_parent: Node = enemy.get_parent()
 	if not is_instance_valid(path_parent):
 		return
@@ -185,14 +193,19 @@ func _trigger_spore_split() -> void:
 		micro.scale = Vector2(0.65, 0.65)
 		micro.primary_color = Color("#76FF03")
 		
-		path_parent.add_child(micro)
-		micro.progress = maxf(0.0, current_prog - (float(i) * 20.0))
+		# Defer entity spawning so the physics step iteration tree is never mutated mid-frame
+		var spawn_prog: float = maxf(0.0, current_prog - (float(i) * 20.0))
+		if micro.visual_node:
+			micro.visual_node.modulate = Color(0.5, 1.0, 0.2, 0.9)
+			
+		path_parent.call_deferred("add_child", micro)
+		micro.set_deferred("progress", spawn_prog)
 
 
 func _spawn_evade_text() -> void:
 	if not is_instance_valid(enemy):
 		return
-	var loc_mgr: Node = enemy.get_node_or_null("/root/LocalizationManager") if enemy.is_inside_tree() else null
+	var loc_mgr: Node = enemy.get_node_or_null("/root/LocalizationManager")
 	var evade_str: String = loc_mgr.call("get_text", "STATUS_EVADED", "[ PHASE EVADE ! ]") if loc_mgr else "[ PHASE EVADE ! ]"
 	enemy._spawn_reaction_text(evade_str, Color("#BF55EC"))
 
@@ -232,25 +245,31 @@ func _create_visual_indicator() -> void:
 			indicator_node.visible = false
 			
 		ModifierType.COMMAND_AURA:
-			# Custom drawn pulsing golden aura ring
-			var aura_drawer: Node2D = Node2D.new()
-			aura_drawer.draw.connect(func() -> void:
-				var p: float = (sin(_aura_pulse) + 1.0) * 0.5
-				var col: Color = Color(1.0, 0.84, 0.0, 0.35 + p * 0.25)
-				aura_drawer.draw_arc(Vector2.ZERO, AURA_RADIUS, 0.0, TAU, 32, col, 2.0)
-				aura_drawer.draw_circle(Vector2.ZERO, AURA_RADIUS * 0.3, Color(1.0, 0.84, 0.0, 0.08))
-			)
-			indicator_node.add_child(aura_drawer)
+			var aura: CommandAuraVisual = CommandAuraVisual.new()
+			aura.aura_radius = AURA_RADIUS
+			indicator_node.add_child(aura)
 			
 		ModifierType.SPORE_SPLIT:
-			# 3 pulsating bio-nodes
-			var spore_drawer: Node2D = Node2D.new()
-			spore_drawer.draw.connect(func() -> void:
-				var p: float = (sin(_spore_pulse) + 1.0) * 0.5
-				var col: Color = Color(0.46, 1.0, 0.01, 0.8)
-				for i in range(3):
-					var a: float = float(i) * (TAU / 3.0) + _spore_pulse * 0.5
-					var pos: Vector2 = Vector2(cos(a), sin(a)) * 18.0
-					spore_drawer.draw_circle(pos, 4.0 + p * 2.0, col)
-			)
-			indicator_node.add_child(spore_drawer)
+			var spore: SporeSplitVisual = SporeSplitVisual.new()
+			indicator_node.add_child(spore)
+
+
+class CommandAuraVisual extends Node2D:
+	var aura_radius: float = 150.0
+	var pulse: float = 0.0
+	func _draw() -> void:
+		var p: float = (sin(pulse) + 1.0) * 0.5
+		var col: Color = Color(1.0, 0.84, 0.0, 0.35 + p * 0.25)
+		draw_arc(Vector2.ZERO, aura_radius, 0.0, TAU, 32, col, 2.0)
+		draw_circle(Vector2.ZERO, aura_radius * 0.3, Color(1.0, 0.84, 0.0, 0.08))
+
+
+class SporeSplitVisual extends Node2D:
+	var pulse: float = 0.0
+	func _draw() -> void:
+		var p: float = (sin(pulse) + 1.0) * 0.5
+		var col: Color = Color(0.46, 1.0, 0.01, 0.8)
+		for i in range(3):
+			var a: float = float(i) * (TAU / 3.0) + pulse * 0.5
+			var pos: Vector2 = Vector2(cos(a), sin(a)) * 18.0
+			draw_circle(pos, 4.0 + p * 2.0, col)

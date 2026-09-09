@@ -52,7 +52,7 @@ func _process(delta: float) -> void:
 
 
 func fire_at(target: EnemyBase) -> void:
-	if not is_instance_valid(target) or target.is_dead:
+	if not is_instance_valid(target) or target.is_queued_for_deletion() or target.is_dead:
 		return
 		
 	EventBus.tower_fired.emit(self, target)
@@ -60,16 +60,18 @@ func fire_at(target: EnemyBase) -> void:
 	# Direct electrical discharge
 	var effective_damage: float = GlobalState.get_stat("tower_damage", _base_damage)
 	target.take_damage(effective_damage, false, Color("#00F0FF"))
-	target.apply_element("electro", 3.0, effective_damage)
+	if is_instance_valid(target) and not target.is_queued_for_deletion():
+		target.apply_element("electro", 3.0, effective_damage)
 	
 	if laser_beam:
 		laser_beam.clear_points()
 		laser_beam.default_color = Color("#00F0FF")
 		laser_beam.width = 3.5
 		laser_beam.add_point(global_position)
-		var mid: Vector2 = (global_position + target.global_position) * 0.5 + Vector2(randf_range(-15, 15), randf_range(-15, 15))
+		var target_pos: Vector2 = target.global_position if is_instance_valid(target) else global_position
+		var mid: Vector2 = (global_position + target_pos) * 0.5 + Vector2(randf_range(-15, 15), randf_range(-15, 15))
 		laser_beam.add_point(mid)
-		laser_beam.add_point(target.global_position)
+		laser_beam.add_point(target_pos)
 		laser_beam.visible = true
 		
 		var t: Tween = create_tween()
@@ -90,13 +92,17 @@ func _update_tether_connections(delta: float) -> void:
 		return
 		
 	var max_dist: float = get_max_tether_distance()
-	var peers: Array[Node] = tree.get_nodes_in_group("tesla_towers")
+	var peers: Array[Node] = tree.get_nodes_in_group("tesla_towers").duplicate()
 	
 	# Find peers to connect to (only connect if our instance ID is smaller to avoid duplicate tethers)
 	_active_peers.clear()
 	for node: Node in peers:
-		if node is TeslaLattice and node != self and is_instance_valid(node):
+		if not is_instance_valid(node) or node.is_queued_for_deletion():
+			continue
+		if node is TeslaLattice and node != self:
 			var peer: TeslaLattice = node as TeslaLattice
+			if not is_instance_valid(peer) or peer.is_queued_for_deletion():
+				continue
 			if get_instance_id() < peer.get_instance_id():
 				var dist: float = global_position.distance_to(peer.global_position)
 				if dist <= max_dist:
@@ -152,19 +158,23 @@ func _check_laser_intersections(p_start: Vector2, p_end: Vector2, tick_dmg: floa
 	if not tree:
 		return
 		
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	const BEAM_HIT_DIST: float = 24.0
 	
 	for node: Node in enemies:
-		if not (node is EnemyBase) or not is_instance_valid(node) or node.is_queued_for_deletion():
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
 			continue
 		var enemy: EnemyBase = node as EnemyBase
-		if enemy.is_dead:
+		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
 			continue
 			
 		var closest: Vector2 = Geometry2D.get_closest_point_to_segment(enemy.global_position, p_start, p_end)
 		if enemy.global_position.distance_to(closest) <= BEAM_HIT_DIST:
+			if not is_instance_valid(enemy) or enemy.is_queued_for_deletion():
+				continue
 			enemy.take_damage(tick_dmg, false, Color("#00F0FF"))
+			if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
+				continue
 			enemy.apply_slow(0.85, 0.4) # 15% slow while crossing
 			enemy.apply_element("electro", 2.0, tick_dmg)
 			

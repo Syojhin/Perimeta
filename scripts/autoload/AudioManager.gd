@@ -23,6 +23,7 @@ const TRACKS: Dictionary = {
 # SFX Player Pool
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_player_index: int = 0
+var _sfx_volume_tweens: Dictionary = {} # AudioStreamPlayer -> Tween
 
 # SFX Throttling & Voice Limiting State
 var _stream_last_play_time: Dictionary = {} # AudioStream -> int (msec)
@@ -423,6 +424,23 @@ func play_card_hover(rarity: int = 0) -> void:
 	play_sound(snd_perk if snd_perk else snd_coin, 0.02, -10.0, base_p)
 
 
+func _recycle_sfx_player(player: AudioStreamPlayer, stream: AudioStream, pitch: float, volume_db: float) -> void:
+	if not is_instance_valid(player) or not player.is_inside_tree():
+		return
+	
+	# Kill active volume tweens before re-triggering audio streams on recycled audio channels
+	var active_tween: Tween = _sfx_volume_tweens.get(player)
+	if active_tween and active_tween.is_valid():
+		active_tween.kill()
+	_sfx_volume_tweens.erase(player)
+	
+	player.stop()
+	player.stream = stream
+	player.volume_db = volume_db
+	player.pitch_scale = clampf(pitch, 0.1, 4.0)
+	player.play()
+
+
 func _play_stream_on_pool(stream: AudioStream, pitch: float, volume_db: float) -> void:
 	if not stream or _sfx_players.is_empty():
 		return
@@ -431,28 +449,21 @@ func _play_stream_on_pool(stream: AudioStream, pitch: float, volume_db: float) -
 	if stream == snd_hit:
 		var hit_players: Array[AudioStreamPlayer] = []
 		for p: AudioStreamPlayer in _sfx_players:
-			if p.playing and p.stream == snd_hit:
+			if is_instance_valid(p) and p.playing and p.stream == snd_hit:
 				hit_players.append(p)
 		
 		if hit_players.size() >= MAX_CONCURRENT_HIT_VOICES:
 			# Steal the oldest active hit voice instead of exhausting other channels
 			var stolen_player: AudioStreamPlayer = hit_players[0]
 			if is_instance_valid(stolen_player) and stolen_player.is_inside_tree():
-				stolen_player.stop()
-				stolen_player.stream = stream
-				stolen_player.volume_db = volume_db
-				stolen_player.pitch_scale = clampf(pitch, 0.1, 4.0)
-				stolen_player.play()
+				_recycle_sfx_player(stolen_player, stream, pitch, volume_db)
 				return
 	
 	var player: AudioStreamPlayer = _sfx_players[_sfx_player_index]
 	_sfx_player_index = (_sfx_player_index + 1) % _sfx_players.size()
 	
 	if is_instance_valid(player) and player.is_inside_tree():
-		player.stream = stream
-		player.volume_db = volume_db
-		player.pitch_scale = clampf(pitch, 0.1, 4.0)
-		player.play()
+		_recycle_sfx_player(player, stream, pitch, volume_db)
 
 
 # --- Sound Synthesizers ---

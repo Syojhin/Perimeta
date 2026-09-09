@@ -54,7 +54,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if is_dead:
+	if not is_instance_valid(self) or is_queued_for_deletion() or is_dead:
 		return
 	
 	# Handle elemental status decay
@@ -87,7 +87,11 @@ func _process(delta: float) -> void:
 			if _nanite_tick_acc >= 0.5:
 				_nanite_tick_acc = 0.0
 				var dot_dmg: float = float(nanite_stacks) * 4.0
-				take_damage(dot_dmg, false, Color("#76FF03"))
+				if is_instance_valid(self) and not is_queued_for_deletion() and not is_dead:
+					take_damage(dot_dmg, false, Color("#76FF03"))
+
+	if not is_instance_valid(self) or is_queued_for_deletion() or is_dead:
+		return
 
 	# Handle allied Command Aura buff (overrides slow, grants +25% move speed & gravity immunity)
 	if command_aura_timer > 0.0:
@@ -99,8 +103,12 @@ func _process(delta: float) -> void:
 		is_gravity_immune = false
 
 	# Process active elite modifiers
-	for mod: EnemyModifier in active_modifiers:
-		mod.on_physics_process(delta)
+	for mod: EnemyModifier in active_modifiers.duplicate():
+		if is_instance_valid(mod) and is_instance_valid(self) and not is_queued_for_deletion() and not is_dead:
+			mod.on_physics_process(delta)
+
+	if not is_instance_valid(self) or is_queued_for_deletion() or is_dead:
+		return
 
 	# Smoothly return lateral gravitational displacement to path center
 	if absf(v_offset) > 0.1:
@@ -234,13 +242,16 @@ func _trigger_elemental_aoe(radius: float, dmg: float, fx_color: Color) -> void:
 		NodePool.spawn_shockwave(global_position, radius, fx_color, 0.18)
 	
 	# Damage nearby enemies
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	var r_sq: float = radius * radius
 	for node: Node in enemies:
-		if node is EnemyBase and is_instance_valid(node) and not node.is_queued_for_deletion():
-			var enemy: EnemyBase = node as EnemyBase
-			if not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
-				enemy.take_damage(dmg, true, fx_color)
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
+			continue
+		var enemy: EnemyBase = node as EnemyBase
+		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
+			continue
+		if global_position.distance_squared_to(enemy.global_position) <= r_sq:
+			enemy.take_damage(dmg, true, fx_color)
 
 
 func _spawn_reaction_text(text_str: String, color: Color) -> void:
@@ -251,14 +262,14 @@ func _spawn_reaction_text(text_str: String, color: Color) -> void:
 	elif DAMAGE_NUMBER_SCENE:
 		var dmg_inst: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
 		if dmg_inst:
-			target_parent.add_child(dmg_inst)
 			dmg_inst.global_position = spawn_pos
+			target_parent.add_child(dmg_inst)
 			dmg_inst.setup_text(text_str, color, true)
 
 
 ## Apply damage to this enemy, trigger damage popups, and check death.
 func take_damage(amount: float, is_crit: bool = false, color_override: Color = Color("#E2F1FF"), damage_type: String = "") -> void:
-	if is_dead:
+	if not is_instance_valid(self) or is_queued_for_deletion() or is_dead:
 		return
 	
 	# Determine damage type if not explicitly provided
@@ -275,10 +286,11 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 	var final_amount: float = amount
 	
 	# Pass through active elite composable modifiers (e.g. Phase Shift evasion, Reactive Plating resistance)
-	for mod: EnemyModifier in active_modifiers:
-		final_amount = mod.on_take_damage(final_amount, dtype)
-		if final_amount <= 0.0:
-			return # Fully negated / evaded
+	for mod: EnemyModifier in active_modifiers.duplicate():
+		if is_instance_valid(mod):
+			final_amount = mod.on_take_damage(final_amount, dtype)
+			if final_amount <= 0.0:
+				return # Fully negated / evaded
 	
 	# Anti-Spawn Camping Grace: 80% damage reduction for first 0.5s off the gate
 	if get_parent() is Path2D and progress_ratio < 0.04:
@@ -329,13 +341,14 @@ func _spawn_damage_number(amount: float, is_crit: bool, color_override: Color) -
 
 ## Handle enemy death and reward bounty.
 func die() -> void:
-	if is_dead:
+	if not is_instance_valid(self) or is_dead:
 		return
 	is_dead = true
 	
 	# Process active elite modifiers on_death hooks (e.g. Spore Split)
-	for mod: EnemyModifier in active_modifiers:
-		mod.on_death()
+	for mod: EnemyModifier in active_modifiers.duplicate():
+		if is_instance_valid(mod):
+			mod.on_death()
 	
 	# Corrosive Nanite Detonation
 	if nanite_stacks > 0:
@@ -399,15 +412,16 @@ func _trigger_nanite_burst(outbreak_active: bool) -> void:
 	var burst_text: String = loc_mgr.call("get_text", "REACTION_CORROSIVE", "[CORROSIVE BURST !]") if loc_mgr else "[CORROSIVE BURST !]"
 	_spawn_reaction_text(burst_text, fx_color)
 	
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	var r_sq: float = radius * radius
 	for node: Node in enemies:
-		if node is EnemyBase and is_instance_valid(node) and not node.is_queued_for_deletion():
-			var enemy: EnemyBase = node as EnemyBase
-			if enemy != self and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
-				enemy.take_damage(dmg, true, fx_color)
-				if outbreak_active:
-					enemy.add_nanite_stacks(3)
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
+			continue
+		var enemy: EnemyBase = node as EnemyBase
+		if enemy != self and is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
+			enemy.take_damage(dmg, true, fx_color)
+			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and outbreak_active:
+				enemy.add_nanite_stacks(3)
 
 
 func _trigger_cryo_shatter() -> void:
@@ -415,13 +429,15 @@ func _trigger_cryo_shatter() -> void:
 	if not tree:
 		return
 	
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	var r_sq: float = 65.0 * 65.0
 	for node: Node in enemies:
-		if node is EnemyBase and is_instance_valid(node) and not node.is_queued_for_deletion():
-			var enemy: EnemyBase = node as EnemyBase
-			if enemy != self and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
-				enemy.take_damage(40.0, false, Color("#64D2FF"))
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
+			continue
+		var enemy: EnemyBase = node as EnemyBase
+		if enemy != self and is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
+			enemy.take_damage(40.0, false, Color("#64D2FF"))
+			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
 				enemy.apply_element("cryo", 2.5, 40.0)
 
 
@@ -458,12 +474,14 @@ func _trigger_core_reactive_discharge(insulator_lvl: int) -> void:
 		return
 	
 	var shock_dmg: float = 50.0 * float(insulator_lvl)
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
 	for node: Node in enemies:
-		if node is EnemyBase and is_instance_valid(node) and not node.is_queued_for_deletion():
-			var enemy: EnemyBase = node as EnemyBase
-			if not enemy.is_dead and global_position.distance_to(enemy.global_position) <= 260.0:
-				enemy.take_damage(shock_dmg, true, Color("#FF6B2B"))
+		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
+			continue
+		var enemy: EnemyBase = node as EnemyBase
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_to(enemy.global_position) <= 260.0:
+			enemy.take_damage(shock_dmg, true, Color("#FF6B2B"))
+			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
 				enemy.apply_element("pyro", 3.0, shock_dmg)
 				enemy.apply_element("electro", 3.0, shock_dmg)
 

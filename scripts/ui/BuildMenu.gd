@@ -11,6 +11,7 @@ var _tower_registry: Array[TowerData] = []
 var _build_buttons: Array[Button] = []
 
 @onready var panel_container: PanelContainer = $PanelContainer
+@onready var backdrop: Control = get_node_or_null("Backdrop")
 
 # Containers
 @onready var empty_container: VBoxContainer = $PanelContainer/Margin/VBox/EmptyModeContainer
@@ -30,6 +31,9 @@ var _build_buttons: Array[Button] = []
 func _ready() -> void:
 	_load_tower_registry()
 	_setup_dynamic_build_buttons()
+	
+	if backdrop and not backdrop.gui_input.is_connected(_on_backdrop_gui_input):
+		backdrop.gui_input.connect(_on_backdrop_gui_input)
 	
 	if priority_btn:
 		priority_btn.pressed.connect(_on_priority_pressed)
@@ -157,12 +161,24 @@ func open_for_socket(socket: BuildSocket) -> void:
 	show()
 
 
-## Close and hide the build menu.
+## Close and hide the build menu, deselecting the socket and occupying tower.
 func close() -> void:
-	if is_instance_valid(target_socket) and target_socket.is_occupied:
-		target_socket.current_tower.set_selected(false)
+	if is_instance_valid(target_socket):
+		if target_socket.is_occupied and is_instance_valid(target_socket.current_tower):
+			target_socket.current_tower.set_selected(false)
 	target_socket = null
 	hide()
+
+
+## Alias for closing the build menu via click-outside or UI button.
+func close_menu() -> void:
+	close()
+
+
+func _on_backdrop_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		accept_event()
+		close_menu()
 
 
 ## Refresh menu state, affordability checks, and button labels.
@@ -305,7 +321,9 @@ func _position_menu_near_socket(socket_pos: Vector2) -> void:
 	target_pos.x = clampf(target_pos.x, 80.0, 1920.0 - menu_size.x - 80.0)
 	target_pos.y = clampf(target_pos.y, 80.0, 1080.0 - menu_size.y - 80.0)
 	
-	position = target_pos
+	position = Vector2.ZERO
+	if panel_container:
+		panel_container.position = target_pos
 
 
 func _on_currency_changed(_new_amount: int, _delta: int) -> void:
