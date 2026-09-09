@@ -16,6 +16,7 @@ extends Control
 @onready var skill_tree_modal: SkillTree = $SkillTree
 @onready var settings_modal: SettingsModal = $SettingsModal
 @onready var credits_modal: Control = $CreditsModal
+@onready var sector_select_modal: SectorSelectModal = $SectorSelectModal
 
 @onready var bg_poly_outer: Polygon2D = $Background/OuterRing
 @onready var bg_poly_inner: Polygon2D = $Background/InnerRing
@@ -63,7 +64,7 @@ func _update_localization() -> void:
 	if subtitle_label:
 		subtitle_label.text = LocalizationManager.get_text("UI_SUBTITLE")
 	if start_btn:
-		start_btn.text = LocalizationManager.get_text("UI_START_MISSION")
+		start_btn.text = LocalizationManager.get_text("UI_DEPLOY_SECTOR", "DEPLOY / SELECT SECTOR")
 	if skill_tree_btn:
 		skill_tree_btn.text = LocalizationManager.get_text("UI_SKILL_TREE")
 	if settings_btn:
@@ -99,7 +100,10 @@ func _on_lang_pressed() -> void:
 
 
 func _on_start_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/combat/Arena.tscn")
+	if sector_select_modal and sector_select_modal.has_method("open"):
+		sector_select_modal.open()
+	else:
+		get_tree().change_scene_to_file("res://scenes/combat/Arena.tscn")
 
 
 func _on_skill_tree_pressed() -> void:

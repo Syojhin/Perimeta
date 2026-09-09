@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dp7y1u38kx5qw" path="res://scenes/ui/SkillTree.tscn" id="2_skill_tree"]
 [ext_resource type="PackedScene" uid="uid://cx60v83qmpx1y" path="res://scenes/ui/SettingsModal.tscn" id="3_settings_modal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CreditsModal.tscn" id="4_credits_modal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SectorSelectModal.tscn" id="5_sector_select_modal"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 3
@@ -138,7 +139,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_start")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "START RUN"
+text = "DEPLOY / SELECT SECTOR"
 
 [node name="SkillTreeButton" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
 custom_minimum_size = Vector2(260, 42)
@@ -225,5 +226,9 @@ visible = false
 layout_mode = 1
 
 [node name="CreditsModal" parent="." instance=ExtResource("4_credits_modal")]
+visible = false
+layout_mode = 1
+
+[node name="SectorSelectModal" parent="." instance=ExtResource("5_sector_select_modal")]
 visible = false
 layout_mode = 1

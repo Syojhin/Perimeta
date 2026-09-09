@@ -38,6 +38,18 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu_btn"]
+bg_color = Color(0.18, 0.12, 0.15, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.35, 0.45, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="GameOverModal" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -203,3 +215,12 @@ theme_override_colors/font_color = Color(0.95, 1, 0.95, 1)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_restart_btn")
 text = "RESTART RUN"
+
+[node name="MenuButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/ButtonHBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_menu_btn")
+text = "MAIN MENU"
