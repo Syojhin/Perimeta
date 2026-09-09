@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "tesla_superconducting_wire"
+title = "Superconducting Wire"
+description = "Tesla Lattice tether connection range increased by +40% and enemies crossing the laser suffer a micro-stun."
+rarity = 1
+target_tower_id = "tesla_lattice"
+required_tower_id = "tesla_lattice"
+target_stat = "tesla_superconducting_wire"
+value = 0.40
+is_multiplier = true

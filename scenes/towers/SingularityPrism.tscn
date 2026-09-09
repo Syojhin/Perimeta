@@ -1,0 +1,67 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/towers/SingularityPrism.gd" id="1_singularity_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_prism"]
+resource_local_to_scene = true
+radius = 260.0
+
+[node name="SingularityPrism" type="Node2D"]
+script = ExtResource("1_singularity_script")
+tower_name = "Singularity Prism"
+attack_range = 260.0
+fire_rate = 1.0
+damage = 12.0
+cost = 320
+rotation_speed = 7.0
+
+[node name="RangeArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeArea"]
+shape = SubResource("CircleShape2D_prism")
+
+[node name="Base" type="Node2D" parent="."]
+
+[node name="BasePlate" type="Polygon2D" parent="Base"]
+color = Color(0.08, 0.04, 0.14, 1)
+polygon = PackedVector2Array(0, -18, 16, -9, 16, 9, 0, 18, -16, 9, -16, -9)
+
+[node name="BaseTrim" type="Polygon2D" parent="Base"]
+color = Color(0.55, 0.18, 0.75, 0.7)
+polygon = PackedVector2Array(0, -14, 12, -7, 12, 7, 0, 14, -12, 7, -12, -7)
+
+[node name="TurretHead" type="Node2D" parent="."]
+
+[node name="PrismCore" type="Polygon2D" parent="TurretHead"]
+color = Color(0.12, 0.05, 0.22, 1)
+polygon = PackedVector2Array(-8, -8, 8, -8, 10, 0, 8, 8, -8, 8)
+
+[node name="ShardTop" type="Polygon2D" parent="TurretHead"]
+position = Vector2(0, -12)
+color = Color(0.85, 0.45, 1, 1)
+polygon = PackedVector2Array(0, -6, 4, 0, 0, 6, -4, 0)
+
+[node name="ShardBottom" type="Polygon2D" parent="TurretHead"]
+position = Vector2(0, 12)
+color = Color(0.85, 0.45, 1, 1)
+polygon = PackedVector2Array(0, -6, 4, 0, 0, 6, -4, 0)
+
+[node name="ShardLeft" type="Polygon2D" parent="TurretHead"]
+position = Vector2(-12, 0)
+color = Color(0.65, 0.25, 0.85, 1)
+polygon = PackedVector2Array(0, -5, 5, 0, 0, 5, -5, 0)
+
+[node name="ShardRight" type="Polygon2D" parent="TurretHead"]
+position = Vector2(12, 0)
+color = Color(0.65, 0.25, 0.85, 1)
+polygon = PackedVector2Array(0, -5, 5, 0, 0, 5, -5, 0)
+
+[node name="Muzzle" type="Marker2D" parent="TurretHead"]
+position = Vector2(16, 0)
+
+[node name="LaserBeam" type="Line2D" parent="."]
+visible = false
+width = 3.0
+default_color = Color(0.75, 0.33, 0.93, 1)

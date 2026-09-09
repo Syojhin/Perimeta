@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "nanite_virulent_outbreak"
+title = "Virulent Outbreak"
+description = "Nanite Hive death detonation requires only 4 stacks instead of 5, and the corrosive burst infects adjacent targets with 3 nanite stacks."
+rarity = 2
+target_tower_id = "nanite_hive"
+required_tower_id = "nanite_hive"
+target_stat = "nanite_virulent_outbreak"
+value = 1.0
+is_multiplier = false

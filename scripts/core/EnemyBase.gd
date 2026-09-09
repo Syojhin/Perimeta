@@ -29,6 +29,11 @@ var elemental_status: Dictionary = {
 var armor_shred_timer: float = 0.0
 var stun_timer: float = 0.0
 
+# Corrosive Nanite Status
+var nanite_stacks: int = 0
+var nanite_timer: float = 0.0
+var _nanite_tick_acc: float = 0.0
+
 @onready var hitbox_area: Area2D = $HitboxArea
 @onready var visual_node: Node2D = $Visual
 @onready var health_bar_fill: ColorRect = $HealthBar/HealthBarFill
@@ -67,6 +72,22 @@ func _process(delta: float) -> void:
 	else:
 		speed_multiplier = 1.0
 	
+	# Handle nanite stack decay and toxic DoT
+	if nanite_stacks > 0:
+		nanite_timer = maxf(0.0, nanite_timer - delta)
+		if nanite_timer <= 0.0:
+			nanite_stacks = 0
+		else:
+			_nanite_tick_acc += delta
+			if _nanite_tick_acc >= 0.5:
+				_nanite_tick_acc = 0.0
+				var dot_dmg: float = float(nanite_stacks) * 4.0
+				take_damage(dot_dmg, false, Color("#76FF03"))
+
+	# Smoothly return lateral gravitational displacement to path center
+	if absf(v_offset) > 0.1:
+		v_offset = move_toward(v_offset, 0.0, delta * 35.0)
+
 	_update_status_visuals()
 	
 	progress += move_speed * speed_multiplier * delta
@@ -80,7 +101,9 @@ func _update_status_visuals() -> void:
 	if not visual_node:
 		return
 	
-	if armor_shred_timer > 0.0:
+	if nanite_stacks > 0:
+		visual_node.modulate = Color(0.7, 2.2, 0.4, 1.0) # Toxic nanite lime
+	elif armor_shred_timer > 0.0:
 		visual_node.modulate = Color(1.4, 0.7, 2.0, 1.0) # Violet armor-shred tint
 	elif elemental_status["cryo"] > 0.0 or slow_timer > 0.0:
 		visual_node.modulate = Color(0.4, 0.8, 2.2, 1.0) # Icy cyan tint
@@ -223,7 +246,7 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 	var final_amount: float = amount
 	
 	# Anti-Spawn Camping Grace: 80% damage reduction for first 0.5s off the gate
-	if progress_ratio < 0.04:
+	if get_parent() is Path2D and progress_ratio < 0.04:
 		final_amount *= 0.20
 		
 	# Armor Rating: Breachers and Goliaths reduce incoming non-crit kinetic damage by flat 25%
@@ -238,6 +261,8 @@ func take_damage(amount: float, is_crit: bool = false, color_override: Color = C
 			final_amount *= (1.0 + slow_bonus)
 	if armor_shred_timer > 0.0:
 		final_amount *= 1.40 # 40% increased damage from Superconduct / Armor Shred
+	if nanite_stacks > 0:
+		final_amount *= (1.0 + float(nanite_stacks) * 0.05) # 5% armor shred per stack
 	
 	current_hp = maxf(0.0, current_hp - final_amount)
 	_update_health_bar()
@@ -273,6 +298,13 @@ func die() -> void:
 		return
 	is_dead = true
 	
+	# Corrosive Nanite Detonation
+	if nanite_stacks > 0:
+		var outbreak_active: bool = GlobalState.run_modifiers.get("nanite_virulent_outbreak", 0.0) > 0.0
+		var req_stacks: int = 4 if outbreak_active else 5
+		if nanite_stacks >= req_stacks:
+			_trigger_nanite_burst(outbreak_active)
+	
 	# Cryo Resonance: Permafrost ice shrapnel shatter on death
 	if (elemental_status["cryo"] > 0.0 or slow_timer > 0.0) and Arena.is_cryo_resonance_active():
 		_trigger_cryo_shatter()
@@ -280,6 +312,40 @@ func die() -> void:
 	_spawn_death_sparks()
 	EventBus.enemy_died.emit(self, bounty)
 	queue_free()
+
+
+## Apply nanite infection stacks to target enemy.
+func add_nanite_stacks(count: int = 1, duration: float = 4.0) -> void:
+	if is_dead:
+		return
+	nanite_stacks = mini(10, nanite_stacks + count)
+	nanite_timer = duration
+
+
+func _trigger_nanite_burst(outbreak_active: bool) -> void:
+	var tree: SceneTree = get_tree()
+	if not tree:
+		return
+	var radius: float = 75.0
+	var dmg: float = 60.0 + float(nanite_stacks) * 10.0
+	var fx_color: Color = Color("#76FF03")
+	
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_shockwave(global_position, radius, fx_color, 0.2)
+	
+	var loc_mgr: Node = get_node_or_null("/root/LocalizationManager") if is_inside_tree() else null
+	var burst_text: String = loc_mgr.call("get_text", "REACTION_CORROSIVE", "[CORROSIVE BURST !]") if loc_mgr else "[CORROSIVE BURST !]"
+	_spawn_reaction_text(burst_text, fx_color)
+	
+	var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+	var r_sq: float = radius * radius
+	for node: Node in enemies:
+		if node is EnemyBase and is_instance_valid(node) and not node.is_queued_for_deletion():
+			var enemy: EnemyBase = node as EnemyBase
+			if enemy != self and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
+				enemy.take_damage(dmg, true, fx_color)
+				if outbreak_active:
+					enemy.add_nanite_stacks(3)
 
 
 func _trigger_cryo_shatter() -> void:

@@ -126,6 +126,12 @@ func _create_archetype_style(archetype: String) -> StyleBoxFlat:
 		"PIERCING":
 			style.bg_color = Color(0.08, 0.32, 0.35, 1)
 			style.border_color = Color(0.3, 1, 0.9, 0.7)
+		"GRAVITY":
+			style.bg_color = Color(0.2, 0.08, 0.32, 1)
+			style.border_color = Color(0.75, 0.35, 0.95, 0.7)
+		"CORROSIVE":
+			style.bg_color = Color(0.08, 0.22, 0.12, 1)
+			style.border_color = Color(0.4, 1.0, 0.2, 0.7)
 		_:
 			style.bg_color = Color(0.12, 0.18, 0.26, 1)
 			style.border_color = Color(0.4, 0.6, 0.8, 0.6)
