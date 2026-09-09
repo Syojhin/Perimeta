@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "vital_surge"
+title = "Vital Surge"
+description = "Increase Max Core HP by +30 and instantly restore +30 Core HP."
+rarity = 0
+target_tower_id = ""
+required_tower_id = ""
+target_stat = "max_core_hp"
+value = 30.0
+is_multiplier = false

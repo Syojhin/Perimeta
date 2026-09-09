@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "bountiful_bits"
+title = "Bountiful Bits"
+description = "Defeated enemies award +2 bonus Bits on kill."
+rarity = 0
+target_tower_id = ""
+required_tower_id = ""
+target_stat = "bonus_kill_bits"
+value = 2.0
+is_multiplier = false

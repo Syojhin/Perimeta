@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "railgun_ionized_trail"
+title = "Ionized Trail"
+description = "Railgun beams leave an electrified energy beam on the track for 2.0s that shocks crossing enemies."
+rarity = 2
+target_tower_id = "railgun_turret"
+required_tower_id = "railgun_turret"
+target_stat = "railgun_ionized_trail"
+value = 1.0
+is_multiplier = false

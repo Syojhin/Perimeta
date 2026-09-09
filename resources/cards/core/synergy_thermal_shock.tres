@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "synergy_thermal_shock"
+title = "Thermal Shock"
+description = "Enemies slowed or frozen by Cryo turrets take +50% extra explosive damage from Plasma Mortars."
+rarity = 2
+target_tower_id = "plasma_mortar"
+required_tower_id = "plasma_mortar"
+target_stat = "synergy_thermal_shock"
+value = 0.5
+is_multiplier = true

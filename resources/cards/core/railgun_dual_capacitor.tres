@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "railgun_dual_capacitor"
+title = "Dual Capacitor"
+description = "Railgun beam width is doubled (+100% width) and deals +20% damage to Shielded/Armored enemies."
+rarity = 3
+target_tower_id = "railgun_turret"
+required_tower_id = "railgun_turret"
+target_stat = "railgun_dual_capacitor"
+value = 1.0
+is_multiplier = false

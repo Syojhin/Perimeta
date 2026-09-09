@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "synergy_kinetic_overclock"
+title = "Kinetic Overclock"
+description = "Railguns and Mortars gain +30% faster attack speed when any Pulse turret is within their range."
+rarity = 3
+target_tower_id = ""
+required_tower_id = "pulse_turret"
+target_stat = "synergy_kinetic_overclock"
+value = 0.3
+is_multiplier = true

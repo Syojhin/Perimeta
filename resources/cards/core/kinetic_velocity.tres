@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "kinetic_velocity"
+title = "Kinetic Velocity"
+description = "All turrets gain +25% attack speed for the rest of this run."
+rarity = 0
+target_tower_id = ""
+required_tower_id = ""
+target_stat = "attack_speed"
+value = 0.25
+is_multiplier = true

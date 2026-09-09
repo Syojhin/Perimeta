@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "mortar_heavy_ordnance"
+title = "Heavy Ordnance"
+description = "+40% Mortar blast radius and +25% damage, but -15% fire rate."
+rarity = 2
+target_tower_id = "plasma_mortar"
+required_tower_id = "plasma_mortar"
+target_stat = "mortar_heavy_ordnance"
+value = 1.0
+is_multiplier = false

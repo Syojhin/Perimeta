@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "core_overcharge"
+title = "Core Overcharge"
+description = "Core EMP Super Ability charges +30% faster from all sources."
+rarity = 0
+target_tower_id = ""
+required_tower_id = ""
+target_stat = "super_charge_rate"
+value = 0.3
+is_multiplier = true

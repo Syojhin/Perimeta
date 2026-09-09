@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "railgun_superconductor"
+title = "Superconductor"
+description = "Railgun slugs gain +15% damage for each enemy pierced in a single shot."
+rarity = 1
+target_tower_id = "railgun_turret"
+required_tower_id = "railgun_turret"
+target_stat = "railgun_superconductor"
+value = 0.15
+is_multiplier = true

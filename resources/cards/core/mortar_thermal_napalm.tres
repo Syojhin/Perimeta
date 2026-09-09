@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="BoonCardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/BoonCardData.gd" id="1_boon_card"]
+
+[resource]
+script = ExtResource("1_boon_card")
+card_id = "mortar_thermal_napalm"
+title = "Thermal Napalm"
+description = "Mortar explosions leave a burning hazard puddle for 3.0s, dealing ticking fire damage to passing enemies."
+rarity = 2
+target_tower_id = "plasma_mortar"
+required_tower_id = "plasma_mortar"
+target_stat = "mortar_thermal_napalm"
+value = 1.0
+is_multiplier = false
