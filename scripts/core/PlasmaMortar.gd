@@ -70,6 +70,16 @@ func fire_at(target: EnemyBase) -> void:
 
 
 func _spawn_mortar_shell(start_pos: Vector2, target_pos: Vector2) -> void:
+	if NodePool != null and is_instance_valid(NodePool):
+		NodePool.spawn_mortar_shell(start_pos, target_pos, tier >= 5, shell_flight_time, func() -> void:
+			_detonate_plasma_impact(target_pos)
+		)
+		return
+	
+	# Fallback if NodePool is absent
+	var tree: SceneTree = get_tree()
+	if not tree:
+		return
 	var shell: Node2D = Node2D.new()
 	shell.top_level = true
 	shell.global_position = start_pos
@@ -85,16 +95,14 @@ func _spawn_mortar_shell(start_pos: Vector2, target_pos: Vector2) -> void:
 	trail.width = 3.5
 	trail.default_color = Color(1.0, 0.45, 0.1, 0.7) if tier < 5 else Color(0.2, 0.85, 1.0, 0.7)
 	trail.top_level = true
-	get_tree().root.add_child(trail)
-	get_tree().root.add_child(shell)
+	tree.root.add_child(trail)
+	tree.root.add_child(shell)
 	
 	var arc_peak: Vector2 = (start_pos + target_pos) * 0.5 + Vector2(0, -75)
-	
 	var tween: Tween = create_tween()
 	if tween:
 		tween.tween_method(func(t: float) -> void:
 			if is_instance_valid(shell):
-				# Quadratic Bezier Curve: B(t) = (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
 				var p0: Vector2 = start_pos
 				var p1: Vector2 = arc_peak
 				var p2: Vector2 = target_pos
@@ -105,31 +113,12 @@ func _spawn_mortar_shell(start_pos: Vector2, target_pos: Vector2) -> void:
 					if trail.get_point_count() > 16:
 						trail.remove_point(0)
 		, 0.0, 1.0, shell_flight_time)
-		
 		tween.chain().tween_callback(func() -> void:
 			if is_instance_valid(shell):
 				shell.queue_free()
 			if is_instance_valid(trail):
-				var trail_tween: Tween = create_tween()
-				if trail_tween:
-					trail_tween.tween_property(trail, "modulate:a", 0.0, 0.2)
-					trail_tween.chain().tween_callback(func() -> void:
-						if is_instance_valid(trail):
-							trail.queue_free()
-					)
-				else:
-					trail.queue_free()
-			_detonate_plasma_impact(target_pos)
-		)
-	
-	# Fallback fail-safe timer in case tween is interrupted
-	var tree: SceneTree = get_tree()
-	if tree:
-		tree.create_timer(shell_flight_time + 0.6, false).timeout.connect(func() -> void:
-			if is_instance_valid(shell):
-				shell.queue_free()
-			if is_instance_valid(trail):
 				trail.queue_free()
+			_detonate_plasma_impact(target_pos)
 		)
 
 

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/towers/TowerData.gd" id="1_tower_data"]
+
+[resource]
+script = ExtResource("1_tower_data")
+tower_id = "plasma_mortar"
+display_name = "Plasma Mortar"
+description = "Heavy artillery installation firing high-yield arcing plasma payloads."
+archetype = "PLASMA"
+base_cost = 300
+base_damage = 65.0
+base_fire_rate = 0.6
+base_range = 300.0
+scene_path = "res://scenes/towers/variants/PlasmaMortar.tscn"
+tier_upgrades = [{
+"cost": 150,
+"damage_mult": 1.35,
+"range_mult": 1.15,
+"tier": 2
+}, {
+"cost": 350,
+"damage_mult": 1.35,
+"range_mult": 1.15,
+"tier": 3
+}, {
+"cost": 800,
+"damage_mult": 1.35,
+"range_mult": 1.15,
+"tier": 4
+}, {
+"cost": 2000,
+"damage_mult": 2.0,
+"is_master": true,
+"range_mult": 1.3,
+"tier": 5
+}]
+prestige_multiplier = 1.0

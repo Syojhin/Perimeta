@@ -24,6 +24,14 @@ const TRACKS: Dictionary = {
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_player_index: int = 0
 
+# SFX Throttling & Voice Limiting State
+var _stream_last_play_time: Dictionary = {} # AudioStream -> int (msec)
+var _hit_trigger_timestamps: Array[int] = [] # Sliding 1000ms timestamp window
+const SFX_MIN_RETRIGGER_MSEC: int = 50 # Minimum 50ms cooldown for high-freq sounds
+const MAX_CONCURRENT_HIT_VOICES: int = 4 # Max 4 of 12 channels dedicated to impact hits
+const HIT_RATE_DOWNSCALE_THRESHOLD: int = 12 # Downscale volume if > 12 hits/sec
+const HIT_RATE_MAX_THRESHOLD: int = 22 # Drop triggers if > 22 hits/sec
+
 # Dual BGM Crossfade Players (Bus: "Music")
 var _bgm_player_a: AudioStreamPlayer
 var _bgm_player_b: AudioStreamPlayer
@@ -94,10 +102,11 @@ func _apply_initial_bus_volumes() -> void:
 	var music_vol: float = 0.7
 	var sfx_vol: float = 0.8
 	
-	if SaveManager:
-		master_vol = SaveManager.master_volume
-		music_vol = SaveManager.music_volume
-		sfx_vol = SaveManager.sfx_volume
+	var save_mgr: Node = get_node_or_null("/root/SaveManager") if is_inside_tree() else null
+	if save_mgr:
+		master_vol = save_mgr.get("master_volume") if "master_volume" in save_mgr else 1.0
+		music_vol = save_mgr.get("music_volume") if "music_volume" in save_mgr else 0.7
+		sfx_vol = save_mgr.get("sfx_volume") if "sfx_volume" in save_mgr else 0.8
 	
 	var master_idx: int = AudioServer.get_bus_index("Master")
 	if master_idx != -1:
@@ -211,22 +220,25 @@ func _clean_key(raw_name: String) -> String:
 
 
 func _setup_event_listeners() -> void:
-	EventBus.tower_fired.connect(_on_tower_fired)
-	EventBus.enemy_damaged.connect(_on_enemy_damaged)
-	EventBus.enemy_died.connect(_on_enemy_died)
-	EventBus.currency_changed.connect(_on_currency_changed)
-	EventBus.perks_updated.connect(_on_perks_updated)
-	EventBus.core_damaged.connect(_on_core_damaged)
-	EventBus.super_ability_activated.connect(_on_super_ability_activated)
-	EventBus.card_draft_completed.connect(_on_card_draft_completed)
+	var bus: Node = get_node_or_null("/root/EventBus") if is_inside_tree() else null
+	if not bus:
+		return
+	bus.tower_fired.connect(_on_tower_fired)
+	bus.enemy_damaged.connect(_on_enemy_damaged)
+	bus.enemy_died.connect(_on_enemy_died)
+	bus.currency_changed.connect(_on_currency_changed)
+	bus.perks_updated.connect(_on_perks_updated)
+	bus.core_damaged.connect(_on_core_damaged)
+	bus.super_ability_activated.connect(_on_super_ability_activated)
+	bus.card_draft_completed.connect(_on_card_draft_completed)
 	
 	# Music state transitions
-	EventBus.wave_started.connect(_on_wave_started)
-	EventBus.boss_spawned.connect(_on_boss_spawned)
-	EventBus.boss_defeated.connect(_on_boss_defeated)
-	EventBus.victory_reached.connect(_on_victory_reached)
-	EventBus.game_over.connect(_on_game_over)
-	EventBus.run_started.connect(_on_run_started)
+	bus.wave_started.connect(_on_wave_started)
+	bus.boss_spawned.connect(_on_boss_spawned)
+	bus.boss_defeated.connect(_on_boss_defeated)
+	bus.victory_reached.connect(_on_victory_reached)
+	bus.game_over.connect(_on_game_over)
+	bus.run_started.connect(_on_run_started)
 
 
 # --- Crossfade Dynamic Music System ---
@@ -367,10 +379,34 @@ func play_sfx(sound_name: String, pitch_range: Vector2 = Vector2.ONE, volume_db:
 	_play_stream_on_pool(stream, pitch, volume_db)
 
 
-## Play an audio stream through the round-robin SFX pool with safe guards.
+## Play an audio stream through the round-robin SFX pool with safe guards, cooldown throttling, and voice capping.
 func play_sound(stream: AudioStreamWAV, pitch_random: float = 0.06, volume_db: float = -6.0) -> void:
 	if not stream:
 		return
+	
+	var now_msec: int = Time.get_ticks_msec()
+	
+	# 1. High-frequency re-trigger cooldown (50ms) for high-frequency hit & laser sounds
+	if stream == snd_hit or stream == snd_laser:
+		var last_play: int = _stream_last_play_time.get(stream, 0)
+		if now_msec - last_play < SFX_MIN_RETRIGGER_MSEC:
+			return # Drop trigger to prevent audio bus saturation
+		_stream_last_play_time[stream] = now_msec
+	
+	# 2. Rate-limiter and dynamic volume downscaling for hit sounds
+	if stream == snd_hit:
+		var cutoff: int = now_msec - 1000
+		while _hit_trigger_timestamps.size() > 0 and _hit_trigger_timestamps[0] < cutoff:
+			_hit_trigger_timestamps.pop_front()
+		
+		var hit_count_sec: int = _hit_trigger_timestamps.size()
+		if hit_count_sec >= HIT_RATE_MAX_THRESHOLD:
+			return # Drop trigger when exceeding maximum threshold
+		elif hit_count_sec >= HIT_RATE_DOWNSCALE_THRESHOLD:
+			volume_db -= 4.0 # Downscale volume dynamically to prevent voice clipping
+		
+		_hit_trigger_timestamps.append(now_msec)
+	
 	var pitch: float = 1.0 + randf_range(-pitch_random, pitch_random)
 	_play_stream_on_pool(stream, pitch, volume_db)
 
@@ -379,10 +415,28 @@ func _play_stream_on_pool(stream: AudioStream, pitch: float, volume_db: float) -
 	if not stream or _sfx_players.is_empty():
 		return
 	
+	# 3. Limit simultaneous concurrent impact sounds to prevent saturating the 12-channel player pool
+	if stream == snd_hit:
+		var hit_players: Array[AudioStreamPlayer] = []
+		for p: AudioStreamPlayer in _sfx_players:
+			if p.playing and p.stream == snd_hit:
+				hit_players.append(p)
+		
+		if hit_players.size() >= MAX_CONCURRENT_HIT_VOICES:
+			# Steal the oldest active hit voice instead of exhausting other channels
+			var stolen_player: AudioStreamPlayer = hit_players[0]
+			if is_instance_valid(stolen_player) and stolen_player.is_inside_tree():
+				stolen_player.stop()
+				stolen_player.stream = stream
+				stolen_player.volume_db = volume_db
+				stolen_player.pitch_scale = clampf(pitch, 0.1, 4.0)
+				stolen_player.play()
+				return
+	
 	var player: AudioStreamPlayer = _sfx_players[_sfx_player_index]
 	_sfx_player_index = (_sfx_player_index + 1) % _sfx_players.size()
 	
-	if is_instance_valid(player):
+	if is_instance_valid(player) and player.is_inside_tree():
 		player.stream = stream
 		player.volume_db = volume_db
 		player.pitch_scale = clampf(pitch, 0.1, 4.0)

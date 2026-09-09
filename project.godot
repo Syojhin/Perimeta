@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Perimeta"
 run/main_scene="res://scenes/ui/MainMenu.tscn"
-config/features=PackedStringArray("4.7", "Forward Plus")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -22,25 +22,18 @@ LocalizationManager="*res://scripts/autoload/LocalizationManager.gd"
 GlobalState="*res://scripts/autoload/GlobalState.gd"
 SaveManager="*res://scripts/autoload/SaveManager.gd"
 AudioManager="*res://scripts/autoload/AudioManager.gd"
+NodePool="*res://scripts/autoload/NodePool.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=0
-window/size/resizable=true
-window/size/borderless=false
 window/size/initial_position_type=2
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-window/dpi/allow_hidpi=true
-
-[physics]
-
-3d/physics_engine="Jolt Physics"
+window/stretch/aspect="expand"
 
 [rendering]
 
-renderer/rendering_method="forward_plus"
-renderer/rendering_method.mobile="forward_plus"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.047058824, 0.050980393, 0.07058824, 1)

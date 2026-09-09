@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/core/RailgunTurret.gd" id="1_railgun_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_railgun"]
+resource_local_to_scene = true
 radius = 380.0
 
 [node name="RailgunTurret" type="Node2D"]

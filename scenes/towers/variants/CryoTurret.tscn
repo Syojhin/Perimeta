@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/core/CryoTurret.gd" id="1_cryo_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_range"]
+resource_local_to_scene = true
 radius = 240.0
 
 [node name="CryoTurret" type="Node2D"]

@@ -195,7 +195,12 @@ static func get_modified_stat(stat_name: String, base_value: float, perks: Dicti
 			"flat_reduction":
 				flat_reduction += val_per_lvl * float(level)
 	
-	var final_val: float = (base_value + flat_addition - flat_reduction) * multiplier
+	var final_val: float = 0.0
+	if is_zero_approx(base_value) and is_zero_approx(flat_addition) and is_zero_approx(flat_reduction):
+		# When queried with 0.0 base value and no flat offsets, return the net multiplier bonus (e.g. Specialist Doctrine)
+		final_val = multiplier - 1.0
+	else:
+		final_val = (base_value + flat_addition - flat_reduction) * multiplier
 	
 	# Special constraints for specific stats
 	if stat_name == "coin_gun_cost":

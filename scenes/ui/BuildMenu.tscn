@@ -122,41 +122,6 @@ theme_override_font_sizes/font_size = 13
 text = "DEPLOY TURRET"
 horizontal_alignment = 1
 
-[node name="PulseButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxFlat_pulse_btn")
-text = "PULSE TURRET (100 B)"
-
-[node name="CryoButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxFlat_cryo_btn")
-text = "CRYO EMITTER (150 B)"
-
-[node name="ChainButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxFlat_chain_btn")
-text = "CHAIN TURRET (200 B)"
-
-[node name="MortarButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxFlat_mortar_btn")
-text = "PLASMA MORTAR (300 B)"
-
-[node name="RailgunButton" type="Button" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = SubResource("StyleBoxFlat_railgun_btn")
-text = "RAILGUN TURRET (450 B)"
-
 [node name="OccupiedModeContainer" type="VBoxContainer" parent="PanelContainer/Margin/VBox"]
 visible = false
 layout_mode = 2
