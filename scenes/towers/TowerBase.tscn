@@ -26,15 +26,75 @@ polygon = PackedVector2Array(-20, -12, 0, -22, 20, -12, 20, 12, 0, 22, -20, 12)
 color = Color(0.18, 0.24, 0.36, 1)
 polygon = PackedVector2Array(-14, -8, 0, -15, 14, -8, 14, 8, 0, 15, -14, 8)
 
+[node name="PrestigeBadge" type="Label" parent="BaseVisual"]
+visible = false
+offset_left = -24.0
+offset_top = 13.0
+offset_right = 24.0
+offset_bottom = 27.0
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 9
+text = "P-I"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TurretHead" type="Node2D" parent="."]
 
-[node name="Barrel" type="Polygon2D" parent="TurretHead"]
+[node name="ChassisBase" type="Node2D" parent="TurretHead"]
+
+[node name="Barrel" type="Polygon2D" parent="TurretHead/ChassisBase"]
 color = Color(0.2, 0.7, 0.9, 1)
 polygon = PackedVector2Array(4, -4, 24, -3, 24, 3, 4, 4)
 
-[node name="CenterCap" type="Polygon2D" parent="TurretHead"]
+[node name="CenterCap" type="Polygon2D" parent="TurretHead/ChassisBase"]
 color = Color(0.35, 0.85, 1, 1)
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[node name="FinsStabilizers" type="Node2D" parent="TurretHead"]
+visible = false
+
+[node name="FinTop" type="Polygon2D" parent="TurretHead/FinsStabilizers"]
+color = Color(0.15, 0.5, 0.75, 0.9)
+polygon = PackedVector2Array(-6, -8, -16, -15, -12, -5)
+
+[node name="FinBottom" type="Polygon2D" parent="TurretHead/FinsStabilizers"]
+color = Color(0.15, 0.5, 0.75, 0.9)
+polygon = PackedVector2Array(-6, 8, -16, 15, -12, 5)
+
+[node name="AcceleratorArray" type="Node2D" parent="TurretHead"]
+visible = false
+
+[node name="RailTop" type="Polygon2D" parent="TurretHead/AcceleratorArray"]
+color = Color(0.4, 0.9, 1, 1)
+polygon = PackedVector2Array(6, -7, 22, -6, 22, -4, 6, -5)
+
+[node name="RailBottom" type="Polygon2D" parent="TurretHead/AcceleratorArray"]
+color = Color(0.4, 0.9, 1, 1)
+polygon = PackedVector2Array(6, 5, 22, 4, 22, 6, 6, 7)
+
+[node name="HeatVentGlow" type="Node2D" parent="TurretHead"]
+visible = false
+
+[node name="Vent" type="Polygon2D" parent="TurretHead/HeatVentGlow"]
+color = Color(1, 0.45, 0.1, 0.85)
+polygon = PackedVector2Array(-5, -5, 3, -5, 3, 5, -5, 5)
+
+[node name="ApexCrown" type="Node2D" parent="TurretHead"]
+visible = false
+
+[node name="Crown" type="Polygon2D" parent="TurretHead/ApexCrown"]
+color = Color(1, 0.85, 0.2, 1)
+polygon = PackedVector2Array(-6, -11, 0, -16, 6, -11, 4, -7, -4, -7)
+
+[node name="PrestigeAscendedMesh" type="Node2D" parent="TurretHead"]
+visible = false
+
+[node name="HaloRing" type="Line2D" parent="TurretHead/PrestigeAscendedMesh"]
+points = PackedVector2Array(-14, 0, 0, -14, 14, 0, 0, 14, -14, 0)
+width = 1.8
+default_color = Color(1, 0.84, 0, 0.85)
 
 [node name="Muzzle" type="Marker2D" parent="TurretHead"]
 position = Vector2(25, 0)

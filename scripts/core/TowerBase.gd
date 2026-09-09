@@ -34,9 +34,18 @@ var max_tier: int = 5
 var infusion_level: int = 0
 var total_invested_bits: int = 100
 
+# Prestige Level (P1 - P20)
+var prestige_level: int = 0
+const MAX_PRESTIGE_LEVEL: int = 20
+var armor_pierce: float = 0.0
+var prestige_stats: Dictionary = {}
+
 var _base_range: float = 220.0
 var _base_fire_rate: float = 5.555
 var _base_damage: float = 15.0
+var _t5_base_damage: float = 0.0
+var _t5_base_fire_rate: float = 0.0
+var _t5_base_range: float = 0.0
 
 var current_target: EnemyBase = null
 var enemies_in_range: Array[EnemyBase] = []
@@ -50,6 +59,15 @@ var is_hovered: bool = false
 @onready var muzzle: Marker2D = $TurretHead/Muzzle
 @onready var laser_beam: Line2D = $LaserBeam
 
+# Modular Visual Tier Nodes
+@onready var chassis_base: Node2D = get_node_or_null("TurretHead/ChassisBase")
+@onready var fins_stabilizers: Node2D = get_node_or_null("TurretHead/FinsStabilizers")
+@onready var accelerator_array: Node2D = get_node_or_null("TurretHead/AcceleratorArray")
+@onready var heat_vent_glow: Node2D = get_node_or_null("TurretHead/HeatVentGlow")
+@onready var apex_crown: Node2D = get_node_or_null("TurretHead/ApexCrown")
+@onready var prestige_ascended_mesh: Node2D = get_node_or_null("TurretHead/PrestigeAscendedMesh")
+@onready var prestige_badge: Label = get_node_or_null("BaseVisual/PrestigeBadge")
+
 
 func _ready() -> void:
 	if tower_data:
@@ -61,6 +79,8 @@ func _ready() -> void:
 		total_invested_bits = cost
 	
 	refresh_stats()
+	_ensure_modular_visual_nodes()
+	set_visual_tier(tier)
 	EventBus.perks_updated.connect(_on_perks_updated)
 	
 	range_area.area_entered.connect(_on_range_area_entered)
@@ -97,9 +117,11 @@ func refresh_stats() -> void:
 	_update_range_shape()
 
 
-## Calculate the upgrade cost for the next tier (T2: 150, T3: 350, T4: 800, T5: 2000, Infusions: 1000 + lvl*1500).
+## Calculate the upgrade cost for the next tier or next Prestige rank.
 func get_upgrade_cost() -> int:
 	if tier >= max_tier:
+		if prestige_level < MAX_PRESTIGE_LEVEL:
+			return get_prestige_cost()
 		return get_infusion_cost()
 	if tower_data and not tower_data.tier_upgrades.is_empty():
 		for up_entry: Dictionary in tower_data.tier_upgrades:
@@ -113,6 +135,15 @@ func get_upgrade_cost() -> int:
 	return 0
 
 
+## Calculate in-run Prestige ascension cost for the next rank (1 to 20).
+func get_prestige_cost() -> int:
+	if prestige_level >= MAX_PRESTIGE_LEVEL:
+		return 0
+	if tower_data:
+		return tower_data.get_prestige_cost(prestige_level + 1)
+	return int(round((1000.0 + float(prestige_level + 1) * 500.0)))
+
+
 ## Calculate Overclock Infusion cost for infinite late-game Bit sink.
 func get_infusion_cost() -> int:
 	return 1000 + (infusion_level * 1500)
@@ -123,9 +154,11 @@ func get_sell_refund() -> int:
 	return int(total_invested_bits * 0.70)
 
 
-## Upgrade this tower to the next tier, or perform Overclock Infusion if at Tier 5 Master.
+## Upgrade this tower to the next tier, or perform In-Run Prestige Ascension if at Tier 5.
 func upgrade() -> bool:
 	if tier >= max_tier:
+		if prestige_level < MAX_PRESTIGE_LEVEL:
+			return ascend_prestige()
 		return infuse_overclock()
 	
 	var up_cost: int = get_upgrade_cost()
@@ -154,10 +187,71 @@ func upgrade() -> bool:
 		_base_damage *= dmg_mult
 		_base_range *= rng_mult
 		
+	if tier == 5:
+		_t5_base_damage = _base_damage
+		_t5_base_fire_rate = _base_fire_rate
+		_t5_base_range = _base_range
+		
 	refresh_stats()
+	set_visual_tier(tier)
 	_show_upgrade_effect()
 	EventBus.tower_upgraded.emit(self)
 	return true
+
+
+## Ascend this Tier 5 Master tower to the next Prestige rank (P1 to P20).
+func ascend_prestige() -> bool:
+	if tier < 5 or prestige_level >= MAX_PRESTIGE_LEVEL:
+		return false
+		
+	var cost_req: int = get_prestige_cost()
+	if not GlobalState.spend_currency(cost_req):
+		return false
+		
+	total_invested_bits += cost_req
+	prestige_level += 1
+	
+	_apply_prestige_stats()
+	set_visual_tier(tier)
+	
+	# Spawn shockwave ring via NodePool
+	var pool: Node = get_node_or_null("/root/NodePool") if is_inside_tree() else null
+	if pool and pool.has_method("spawn_shockwave"):
+		pool.call("spawn_shockwave", global_position, 120.0, Color(1.0, 0.84, 0.0, 0.9), 0.35)
+		
+	# Trigger ascending SFX drop
+	var audio: Node = get_node_or_null("/root/AudioManager") if is_inside_tree() else null
+	if audio and audio.has_method("play_prestige_ascension_sfx"):
+		audio.call("play_prestige_ascension_sfx")
+		
+	_show_upgrade_effect()
+	EventBus.tower_upgraded.emit(self)
+	return true
+
+
+func _apply_prestige_stats() -> void:
+	if prestige_level <= 0:
+		return
+		
+	var stats: Dictionary = {}
+	if tower_data:
+		stats = tower_data.get_prestige_stats(prestige_level)
+	else:
+		stats = TowerData.calculate_prestige_stats(prestige_level)
+		
+	prestige_stats = stats
+	armor_pierce = float(stats.get("armor_pierce", 0.0))
+	
+	if _t5_base_damage <= 0.0:
+		_t5_base_damage = _base_damage
+		_t5_base_fire_rate = _base_fire_rate
+		_t5_base_range = _base_range
+		
+	_base_damage = _t5_base_damage * float(stats.get("damage_mult", 1.0))
+	_base_fire_rate = _t5_base_fire_rate * float(stats.get("attack_speed_mult", 1.0))
+	_base_range = _t5_base_range * float(stats.get("range_mult", 1.0))
+	
+	refresh_stats()
 
 
 ## Infuse Tier 5 Master tower with extra damage (+5%) and range (+3%) indefinitely.
@@ -424,3 +518,173 @@ func _on_range_area_exited(area: Area2D) -> void:
 	
 	if enemy and enemies_in_range.has(enemy):
 		enemies_in_range.erase(enemy)
+
+
+## Static helper resolving integers 1-20 to Roman numerals.
+static func get_roman_numeral(n: int) -> String:
+	var numerals: Dictionary = {
+		20: "XX", 19: "XIX", 18: "XVIII", 17: "XVII", 16: "XVI",
+		15: "XV", 14: "XIV", 13: "XIII", 12: "XII", 11: "XI",
+		10: "X", 9: "IX", 8: "VIII", 7: "VII", 6: "VI",
+		5: "V", 4: "IV", 3: "III", 2: "II", 1: "I"
+	}
+	return numerals.get(n, str(n))
+
+
+## Updates visibility of modular visual components across Tiers 1-5 and Prestige 1-20.
+func set_visual_tier(p_tier: int) -> void:
+	_ensure_modular_visual_nodes()
+	
+	if fins_stabilizers:
+		fins_stabilizers.visible = (p_tier >= 2)
+	if accelerator_array:
+		accelerator_array.visible = (p_tier >= 3)
+	if heat_vent_glow:
+		heat_vent_glow.visible = (p_tier >= 4)
+	if apex_crown:
+		apex_crown.visible = (p_tier >= 5)
+	if prestige_ascended_mesh:
+		prestige_ascended_mesh.visible = (prestige_level >= 1)
+		
+	_update_prestige_badge()
+	_update_prestige_shader()
+	
+	# Momentary neon flash tween on upgrade
+	if turret_head and is_inside_tree():
+		var tw: Tween = create_tween()
+		turret_head.modulate = Color(2.5, 2.5, 3.0, 1.0)
+		tw.tween_property(turret_head, "modulate", Color.WHITE, 0.25)
+
+
+func _update_prestige_badge() -> void:
+	if not prestige_badge:
+		prestige_badge = get_node_or_null("BaseVisual/PrestigeBadge")
+	if prestige_badge:
+		if prestige_level >= 1:
+			prestige_badge.visible = true
+			prestige_badge.text = "P-%s" % get_roman_numeral(prestige_level)
+		else:
+			prestige_badge.visible = false
+
+
+func _update_prestige_shader() -> void:
+	if not turret_head:
+		return
+	if not (turret_head.material is ShaderMaterial):
+		var mat: ShaderMaterial = ShaderMaterial.new()
+		var s: Shader = load("res://shaders/turret_prestige.gdshader") as Shader
+		if s:
+			mat.shader = s
+			turret_head.material = mat
+			
+	var shader_mat: ShaderMaterial = turret_head.material as ShaderMaterial
+	if shader_mat:
+		var intensity: float = clampf(float(prestige_level) / 20.0, 0.0, 1.0)
+		shader_mat.set_shader_parameter("prestige_intensity", intensity)
+
+
+func _ensure_modular_visual_nodes() -> void:
+	if not turret_head:
+		turret_head = get_node_or_null("TurretHead")
+		if not turret_head:
+			turret_head = Node2D.new()
+			turret_head.name = "TurretHead"
+			add_child(turret_head)
+			
+	if not chassis_base:
+		chassis_base = turret_head.get_node_or_null("ChassisBase")
+		if not chassis_base:
+			chassis_base = Node2D.new()
+			chassis_base.name = "ChassisBase"
+			turret_head.add_child(chassis_base)
+			var barrel: Node = turret_head.get_node_or_null("Barrel")
+			if barrel:
+				barrel.reparent(chassis_base)
+			var cap: Node = turret_head.get_node_or_null("CenterCap")
+			if cap:
+				cap.reparent(chassis_base)
+				
+	if not fins_stabilizers:
+		fins_stabilizers = turret_head.get_node_or_null("FinsStabilizers")
+		if not fins_stabilizers:
+			fins_stabilizers = Node2D.new()
+			fins_stabilizers.name = "FinsStabilizers"
+			var fin_l: Polygon2D = Polygon2D.new()
+			fin_l.color = Color(0.15, 0.5, 0.75, 0.9)
+			fin_l.polygon = PackedVector2Array([-6, -8, -16, -15, -12, -5])
+			fins_stabilizers.add_child(fin_l)
+			var fin_r: Polygon2D = Polygon2D.new()
+			fin_r.color = Color(0.15, 0.5, 0.75, 0.9)
+			fin_r.polygon = PackedVector2Array([-6, 8, -16, 15, -12, 5])
+			fins_stabilizers.add_child(fin_r)
+			turret_head.add_child(fins_stabilizers)
+			
+	if not accelerator_array:
+		accelerator_array = turret_head.get_node_or_null("AcceleratorArray")
+		if not accelerator_array:
+			accelerator_array = Node2D.new()
+			accelerator_array.name = "AcceleratorArray"
+			var r_top: Polygon2D = Polygon2D.new()
+			r_top.color = Color(0.4, 0.9, 1.0, 1.0)
+			r_top.polygon = PackedVector2Array([6, -7, 22, -6, 22, -4, 6, -5])
+			accelerator_array.add_child(r_top)
+			var r_bot: Polygon2D = Polygon2D.new()
+			r_bot.color = Color(0.4, 0.9, 1.0, 1.0)
+			r_bot.polygon = PackedVector2Array([6, 5, 22, 4, 22, 6, 6, 7])
+			accelerator_array.add_child(r_bot)
+			turret_head.add_child(accelerator_array)
+			
+	if not heat_vent_glow:
+		heat_vent_glow = turret_head.get_node_or_null("HeatVentGlow")
+		if not heat_vent_glow:
+			heat_vent_glow = Node2D.new()
+			heat_vent_glow.name = "HeatVentGlow"
+			var vent: Polygon2D = Polygon2D.new()
+			vent.color = Color(1.0, 0.45, 0.1, 0.85)
+			vent.polygon = PackedVector2Array([-5, -5, 3, -5, 3, 5, -5, 5])
+			heat_vent_glow.add_child(vent)
+			turret_head.add_child(heat_vent_glow)
+			
+	if not apex_crown:
+		apex_crown = turret_head.get_node_or_null("ApexCrown")
+		if not apex_crown:
+			apex_crown = Node2D.new()
+			apex_crown.name = "ApexCrown"
+			var cr: Polygon2D = Polygon2D.new()
+			cr.color = Color(1.0, 0.85, 0.2, 1.0)
+			cr.polygon = PackedVector2Array([-6, -11, 0, -16, 6, -11, 4, -7, -4, -7])
+			apex_crown.add_child(cr)
+			turret_head.add_child(apex_crown)
+			
+	if not prestige_ascended_mesh:
+		prestige_ascended_mesh = turret_head.get_node_or_null("PrestigeAscendedMesh")
+		if not prestige_ascended_mesh:
+			prestige_ascended_mesh = Node2D.new()
+			prestige_ascended_mesh.name = "PrestigeAscendedMesh"
+			var ring: Line2D = Line2D.new()
+			ring.points = PackedVector2Array([-14, 0, 0, -14, 14, 0, 0, 14, -14, 0])
+			ring.width = 1.8
+			ring.default_color = Color(1.0, 0.84, 0.0, 0.85)
+			prestige_ascended_mesh.add_child(ring)
+			turret_head.add_child(prestige_ascended_mesh)
+			
+	if not prestige_badge:
+		prestige_badge = get_node_or_null("BaseVisual/PrestigeBadge")
+		if not prestige_badge:
+			var base_vis: Node2D = get_node_or_null("BaseVisual")
+			if not base_vis:
+				base_vis = self
+			prestige_badge = Label.new()
+			prestige_badge.name = "PrestigeBadge"
+			prestige_badge.visible = false
+			prestige_badge.offset_left = -24.0
+			prestige_badge.offset_top = 13.0
+			prestige_badge.offset_right = 24.0
+			prestige_badge.offset_bottom = 27.0
+			prestige_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			prestige_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			prestige_badge.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0, 1.0))
+			prestige_badge.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+			prestige_badge.add_theme_constant_override("shadow_offset_y", 1)
+			prestige_badge.add_theme_font_size_override("font_size", 9)
+			base_vis.add_child(prestige_badge)

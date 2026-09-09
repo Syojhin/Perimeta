@@ -22,3 +22,29 @@ func get_scene() -> PackedScene:
 	if scene_path.is_empty():
 		return null
 	return load(scene_path) as PackedScene
+
+
+## Calculate in-run Prestige ascension cost for a target rank (1 to 20).
+func get_prestige_cost(target_rank: int) -> int:
+	if target_rank < 1 or target_rank > 20:
+		return 0
+	var rank_cost: float = (1000.0 + float(target_rank) * 500.0) * prestige_multiplier
+	return int(round(rank_cost))
+
+
+## Compute stat multipliers for a given Prestige rank (0 to 20).
+## Hard caps: Attack Speed multiplier <= 1.50x, Range multiplier <= 1.25x, Armor Pierce <= 0.30.
+static func calculate_prestige_stats(rank: int) -> Dictionary:
+	var r: int = clampi(rank, 0, 20)
+	return {
+		"rank": r,
+		"damage_mult": 1.0 + (float(r) * 0.15),
+		"attack_speed_mult": minf(1.50, 1.0 + (float(r) * 0.025)),
+		"range_mult": minf(1.25, 1.0 + (float(r) * 0.0125)),
+		"armor_pierce": minf(0.30, float(r) * 0.015)
+	}
+
+
+## Instance convenience wrapper for calculate_prestige_stats.
+func get_prestige_stats(rank: int) -> Dictionary:
+	return calculate_prestige_stats(rank)
