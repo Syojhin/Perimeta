@@ -12,6 +12,8 @@ extends Resource
 @export var core_position: Vector2 = Vector2(960, 540)
 @export var ambient_tint: Color = Color(1.0, 1.0, 1.0, 1.0)
 @export var hazard_type: String = "none"
+@export var unlocked_socket_count: int = 4
+@export var socket_unlock_costs: Array[int] = []
 
 
 ## Returns an array of Vector2 positions extracted from socket_transforms.

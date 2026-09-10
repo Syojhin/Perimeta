@@ -200,13 +200,16 @@ func load_map(map_data: MapData) -> void:
 			socket.name = "Socket_%02d" % (i + 1)
 			socket.transform = xform
 			
-			# First 4 inner sockets unlocked by default; outer sockets tiered Bit costs
-			if i < 4:
+			var unlocked_cnt: int = map_data.unlocked_socket_count if map_data.unlocked_socket_count > 0 else 4
+			if i < unlocked_cnt:
 				socket.initial_state = BuildSocket.SocketState.UNLOCKED_EMPTY
 				socket.unlock_cost = 0
 			else:
 				socket.initial_state = BuildSocket.SocketState.LOCKED
-				socket.unlock_cost = 200 + ((i - 4) * 50)
+				if i < map_data.socket_unlock_costs.size() and map_data.socket_unlock_costs[i] > 0:
+					socket.unlock_cost = map_data.socket_unlock_costs[i]
+				else:
+					socket.unlock_cost = 200 + ((i - unlocked_cnt) * 50)
 				
 			socket.socket_selected.connect(_on_socket_selected)
 			sockets_container.add_child(socket)

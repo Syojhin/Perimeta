@@ -10,27 +10,29 @@ var target_socket: BuildSocket = null
 var _tower_registry: Array[TowerData] = []
 var _build_buttons: Array[Button] = []
 
-@onready var panel_container: PanelContainer = $PanelContainer
+@onready var panel_container: PanelContainer = get_node_or_null("PanelContainer")
 @onready var backdrop: Control = get_node_or_null("Backdrop")
 
-# Containers
-@onready var empty_container: VBoxContainer = $PanelContainer/Margin/VBox/EmptyModeContainer
-@onready var occupied_container: VBoxContainer = $PanelContainer/Margin/VBox/OccupiedModeContainer
+# Containers with robust path fallback
+@onready var empty_container: VBoxContainer = _find_empty_container()
+@onready var turret_list: VBoxContainer = _find_turret_list()
+@onready var occupied_container: VBoxContainer = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer")
 
 # Occupied Mode Controls
-@onready var title_label: Label = $PanelContainer/Margin/VBox/OccupiedModeContainer/TitleLabel
-@onready var stats_label: Label = $PanelContainer/Margin/VBox/OccupiedModeContainer/StatsLabel
-@onready var priority_btn: Button = $PanelContainer/Margin/VBox/OccupiedModeContainer/PriorityButton
-@onready var upgrade_btn: Button = $PanelContainer/Margin/VBox/OccupiedModeContainer/UpgradeButton
-@onready var sell_btn: Button = $PanelContainer/Margin/VBox/OccupiedModeContainer/SellButton
+@onready var title_label: Label = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer/TitleLabel")
+@onready var stats_label: Label = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer/StatsLabel")
+@onready var priority_btn: Button = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer/PriorityButton")
+@onready var upgrade_btn: Button = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer/UpgradeButton")
+@onready var sell_btn: Button = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer/SellButton")
 
 # Common Controls
-@onready var close_btn: Button = $PanelContainer/Margin/VBox/CloseButton
+@onready var close_btn: Button = get_node_or_null("PanelContainer/Margin/VBox/CloseButton")
 
 
 func _ready() -> void:
+	_ensure_node_references()
 	_load_tower_registry()
-	_setup_dynamic_build_buttons()
+	populate_turret_buttons()
 	
 	if backdrop and not backdrop.gui_input.is_connected(_on_backdrop_gui_input):
 		backdrop.gui_input.connect(_on_backdrop_gui_input)
@@ -52,6 +54,69 @@ func _ready() -> void:
 				refresh()
 		)
 	hide()
+
+
+func _ensure_node_references() -> void:
+	if not panel_container:
+		panel_container = get_node_or_null("PanelContainer")
+	if not backdrop:
+		backdrop = get_node_or_null("Backdrop")
+	if not empty_container:
+		empty_container = _find_empty_container()
+	if not turret_list:
+		turret_list = _find_turret_list()
+	if not occupied_container:
+		occupied_container = get_node_or_null("PanelContainer/Margin/VBox/OccupiedModeContainer")
+	if not title_label and occupied_container:
+		title_label = occupied_container.get_node_or_null("TitleLabel")
+	if not stats_label and occupied_container:
+		stats_label = occupied_container.get_node_or_null("StatsLabel")
+	if not priority_btn and occupied_container:
+		priority_btn = occupied_container.get_node_or_null("PriorityButton")
+	if not upgrade_btn and occupied_container:
+		upgrade_btn = occupied_container.get_node_or_null("UpgradeButton")
+	if not sell_btn and occupied_container:
+		sell_btn = occupied_container.get_node_or_null("SellButton")
+	if not close_btn and panel_container:
+		close_btn = panel_container.get_node_or_null("Margin/VBox/CloseButton")
+
+
+func _find_empty_container() -> VBoxContainer:
+	var paths: Array[String] = [
+		"PanelContainer/Margin/VBox/EmptyModeContainer",
+		"PanelContainer/VBoxContainer/EmptyModeContainer",
+		"PanelContainer/VBox/EmptyModeContainer",
+		"EmptyModeContainer"
+	]
+	for p in paths:
+		var n: Node = get_node_or_null(p)
+		if n is VBoxContainer:
+			return n as VBoxContainer
+	return null
+
+
+func _find_turret_list() -> VBoxContainer:
+	var paths: Array[String] = [
+		"PanelContainer/Margin/VBox/EmptyModeContainer/TurretList",
+		"PanelContainer/Margin/VBox/TurretList",
+		"PanelContainer/VBoxContainer/TurretList",
+		"TurretList"
+	]
+	for p in paths:
+		var n: Node = get_node_or_null(p)
+		if n is VBoxContainer:
+			return n as VBoxContainer
+	return null
+
+
+func get_turret_list_container() -> VBoxContainer:
+	if not turret_list:
+		turret_list = _find_turret_list()
+	if turret_list:
+		return turret_list
+	if not empty_container:
+		empty_container = _find_empty_container()
+	return empty_container
 
 
 ## Dynamically discover and load all TowerData .tres resources from resources/towers/.
@@ -76,16 +141,69 @@ func _load_tower_registry() -> void:
 	)
 
 
-## Dynamically populate empty container with buttons for each discovered turret.
-func _setup_dynamic_build_buttons() -> void:
-	if not empty_container:
+static func get_archetype_color(archetype: String) -> Color:
+	match archetype.to_upper():
+		"KINETIC": return Color(0.3, 0.8, 1, 1)
+		"CRYO": return Color(0.4, 0.9, 1, 1)
+		"ELECTRO": return Color(1, 0.8, 0.3, 1)
+		"PLASMA": return Color(0.9, 0.3, 1, 1)
+		"PIERCING": return Color(0.3, 1, 0.9, 1)
+		"GRAVITY": return Color(0.75, 0.35, 0.95, 1)
+		"CORROSIVE": return Color(0.4, 1.0, 0.2, 1)
+		_: return Color(0.5, 0.7, 0.9, 1)
+
+
+static func get_tower_icon_glyph(tower_id: String, archetype: String = "") -> String:
+	match tower_id:
+		"pulse_turret": return "🎯"
+		"cryo_turret": return "❄"
+		"chain_turret": return "⚡"
+		"tesla_lattice": return "⚡"
+		"nanite_hive": return "☣"
+		"plasma_mortar": return "🔥"
+		"singularity_prism": return "🌀"
+		"railgun_turret": return "🏹"
+	match archetype.to_upper():
+		"KINETIC": return "🎯"
+		"CRYO": return "❄"
+		"ELECTRO": return "⚡"
+		"CORROSIVE": return "☣"
+		"PLASMA": return "🔥"
+		"GRAVITY": return "🌀"
+		"PIERCING": return "🏹"
+		_: return "⚙"
+
+
+static func create_archetype_icon_texture(color: Color) -> ImageTexture:
+	var img: Image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color.TRANSPARENT)
+	for x in range(1, 15):
+		for y in range(1, 15):
+			if x == 1 or x == 14 or y == 1 or y == 14:
+				img.set_pixel(x, y, color.lightened(0.4))
+			else:
+				img.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(img)
+
+
+## Reliably populate turret buttons with Bit prices and icons.
+func populate_turret_buttons() -> void:
+	_ensure_node_references()
+	if _tower_registry.is_empty():
+		_load_tower_registry()
+		
+	var target_list: VBoxContainer = get_turret_list_container()
+	if not target_list:
 		return
 		
-	var header_label: Label = empty_container.get_node_or_null("HeaderLabel")
-	for child in empty_container.get_children():
+	var header_label: Label = target_list.get_node_or_null("HeaderLabel")
+	for child in target_list.get_children():
 		if child != header_label:
-			child.free()
+			child.queue_free()
 	_build_buttons.clear()
+	
+	var current_bits: int = GlobalState.run_currency
+	var loc_mgr: Node = get_node_or_null("/root/LocalizationManager") if is_inside_tree() else null
 	
 	for data: TowerData in _tower_registry:
 		var btn: Button = Button.new()
@@ -95,12 +213,41 @@ func _setup_dynamic_build_buttons() -> void:
 		var style: StyleBoxFlat = _create_archetype_style(data.archetype)
 		btn.add_theme_stylebox_override("normal", style)
 		
+		var glyph: String = get_tower_icon_glyph(data.tower_id, data.archetype)
+		var arch_col: Color = get_archetype_color(data.archetype)
+		btn.icon = create_archetype_icon_texture(arch_col)
+		
+		var t_name: String = data.display_name
+		if loc_mgr:
+			var loc_key: String = "TURRET_" + data.tower_id.to_upper().replace("_TURRET", "") + "_NAME"
+			if data.tower_id == "plasma_mortar":
+				loc_key = "TURRET_MORTAR_NAME"
+			t_name = loc_mgr.call("get_text", loc_key, data.display_name)
+			
+		btn.text = "%s %s (%d B)" % [glyph, t_name.to_upper(), data.base_cost]
+		btn.disabled = current_bits < data.base_cost
+		
+		btn.set_meta("tower_id", data.tower_id)
+		btn.set_meta("cost", data.base_cost)
+		btn.set_meta("icon", glyph)
+		btn.set_meta("tower_data", data)
+		
 		var captured: TowerData = data
 		btn.pressed.connect(func() -> void:
 			_build_from_data(captured)
 		)
-		empty_container.add_child(btn)
+		
+		target_list.add_child(btn)
 		_build_buttons.append(btn)
+
+
+## Alias for backwards compatibility.
+func _setup_dynamic_build_buttons() -> void:
+	populate_turret_buttons()
+
+
+func get_turret_buttons() -> Array[Button]:
+	return _build_buttons
 
 
 func _create_archetype_style(archetype: String) -> StyleBoxFlat:
@@ -145,6 +292,8 @@ func _create_archetype_style(archetype: String) -> StyleBoxFlat:
 
 ## Open and position the build menu adjacent to a specific socket.
 func open_for_socket(socket: BuildSocket) -> void:
+	_ensure_node_references()
+	
 	if is_instance_valid(target_socket) and target_socket.is_occupied:
 		target_socket.current_tower.set_selected(false)
 		
@@ -157,6 +306,7 @@ func open_for_socket(socket: BuildSocket) -> void:
 		target_socket.current_tower.set_selected(true)
 	
 	_position_menu_near_socket(socket.global_position)
+	populate_turret_buttons()
 	refresh()
 	show()
 
@@ -187,6 +337,7 @@ func refresh() -> void:
 		hide()
 		return
 	
+	_ensure_node_references()
 	var loc_mgr: Node = get_node_or_null("/root/LocalizationManager") if is_inside_tree() else null
 	if close_btn and loc_mgr:
 		close_btn.text = loc_mgr.call("get_text", "UI_CLOSE", "CLOSE")
@@ -194,8 +345,10 @@ func refresh() -> void:
 	var current_bits: int = GlobalState.run_currency
 	
 	if target_socket.is_occupied:
-		empty_container.visible = false
-		occupied_container.visible = true
+		if empty_container:
+			empty_container.visible = false
+		if occupied_container:
+			occupied_container.visible = true
 		
 		var tower: TowerBase = target_socket.current_tower
 		if is_instance_valid(tower):
@@ -258,24 +411,30 @@ func refresh() -> void:
 			
 			sell_btn.text = (loc_mgr.call("get_text", "DECOMMISSION_BTN", "DECOMMISSION (+%d BITS)") % refund) if loc_mgr else "DECOMMISSION (+%d BITS)" % refund
 	else:
-		empty_container.visible = true
-		occupied_container.visible = false
-		
-		for i in range(_tower_registry.size()):
-			if i >= _build_buttons.size():
-				break
-			var data: TowerData = _tower_registry[i]
-			var btn: Button = _build_buttons[i]
+		if empty_container:
+			empty_container.visible = true
+		if occupied_container:
+			occupied_container.visible = false
 			
-			var t_name: String = data.display_name
-			if loc_mgr:
-				var loc_key: String = "TURRET_" + data.tower_id.to_upper().replace("_TURRET", "") + "_NAME"
-				if data.tower_id == "plasma_mortar":
-					loc_key = "TURRET_MORTAR_NAME"
-				t_name = loc_mgr.call("get_text", loc_key, data.display_name)
+		if _build_buttons.size() != _tower_registry.size():
+			populate_turret_buttons()
+		else:
+			for i in range(_tower_registry.size()):
+				if i >= _build_buttons.size():
+					break
+				var data: TowerData = _tower_registry[i]
+				var btn: Button = _build_buttons[i]
 				
-			btn.text = "%s (%d B)" % [t_name.to_upper(), data.base_cost]
-			btn.disabled = current_bits < data.base_cost
+				var glyph: String = get_tower_icon_glyph(data.tower_id, data.archetype)
+				var t_name: String = data.display_name
+				if loc_mgr:
+					var loc_key: String = "TURRET_" + data.tower_id.to_upper().replace("_TURRET", "") + "_NAME"
+					if data.tower_id == "plasma_mortar":
+						loc_key = "TURRET_MORTAR_NAME"
+					t_name = loc_mgr.call("get_text", loc_key, data.display_name)
+					
+				btn.text = "%s %s (%d B)" % [glyph, t_name.to_upper(), data.base_cost]
+				btn.disabled = current_bits < data.base_cost
 
 
 func _build_from_data(data: TowerData) -> void:
@@ -314,7 +473,7 @@ func _on_sell_pressed() -> void:
 
 
 func _position_menu_near_socket(socket_pos: Vector2) -> void:
-	var menu_size: Vector2 = Vector2(310, 330)
+	var menu_size: Vector2 = Vector2(320, 370)
 	var target_pos: Vector2 = socket_pos + Vector2(40, -140)
 	
 	# Clamp to viewport boundaries

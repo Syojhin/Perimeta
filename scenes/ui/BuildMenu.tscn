@@ -105,10 +105,10 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(310, 310)
+custom_minimum_size = Vector2(320, 370)
 layout_mode = 0
-offset_right = 310.0
-offset_bottom = 310.0
+offset_right = 320.0
+offset_bottom = 370.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_menu_panel")
 
 [node name="Margin" type="MarginContainer" parent="PanelContainer"]
@@ -132,6 +132,10 @@ theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "DEPLOY TURRET"
 horizontal_alignment = 1
+
+[node name="TurretList" type="VBoxContainer" parent="PanelContainer/Margin/VBox/EmptyModeContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="OccupiedModeContainer" type="VBoxContainer" parent="PanelContainer/Margin/VBox"]
 visible = false
