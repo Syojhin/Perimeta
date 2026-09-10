@@ -226,6 +226,7 @@ func load_map(map_data: MapData) -> void:
 	# 8. Route WaveSpawner wave path assignments across the dynamic paths
 	if wave_spawner:
 		wave_spawner.set_dynamic_paths(dynamic_paths)
+		wave_spawner.enemy_speed_multiplier = map_data.enemy_speed_multiplier
 
 
 func _process(delta: float) -> void:

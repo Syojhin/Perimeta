@@ -13,10 +13,14 @@ const PREWARM_DEATH_SPARKS: int = 32
 const PREWARM_SHOCKWAVES: int = 16
 const PREWARM_MORTAR_SHELLS: int = 8
 
+const MAX_ACTIVE_DAMAGE_NUMBERS: int = 25
+
 var _damage_pool: Array = []
 var _sparks_pool: Array = []
 var _shockwave_pool: Array = []
 var _mortar_pool: Array[Dictionary] = [] # Array of { "root": Node2D, "dot": Polygon2D, "trail": Line2D, "in_use": bool }
+var _active_damage_instances: Array[DamageNumber] = []
+var _last_frame_delta: float = 0.016
 
 var _pool_container: Node2D = null
 
@@ -36,6 +40,10 @@ func _ready() -> void:
 	var event_bus: Node = get_node_or_null("/root/EventBus") if is_inside_tree() else null
 	if event_bus and event_bus.has_signal("run_started"):
 		event_bus.connect("run_started", Callable(self, "recycle_all_active"))
+
+
+func _process(delta: float) -> void:
+	_last_frame_delta = delta
 
 
 # --- Damage Number Pool ---
@@ -85,6 +93,8 @@ func return_damage_number(inst: DamageNumber) -> void:
 	if not is_instance_valid(inst) or inst.is_queued_for_deletion():
 		return
 	
+	_active_damage_instances.erase(inst)
+	
 	if inst.is_in_group("damage_popups"):
 		inst.remove_from_group("damage_popups")
 	
@@ -103,14 +113,41 @@ func return_damage_number(inst: DamageNumber) -> void:
 
 
 ## High-convenience spawn helper that sets up and fires combat floating text in a single zero-alloc call.
+## Enforces a max cap of 25 concurrent active damage popups, aggregating incoming damage when saturated.
 func spawn_damage_number(pos: Vector2, text: String, color: Color, is_crit: bool = false, target_parent: Node = null) -> DamageNumber:
+	_active_damage_instances = _active_damage_instances.filter(func(d: DamageNumber) -> bool:
+		return is_instance_valid(d) and not d.is_queued_for_deletion() and d.visible and d.is_inside_tree()
+	)
+	
+	if _active_damage_instances.size() >= MAX_ACTIVE_DAMAGE_NUMBERS:
+		var best_inst: DamageNumber = null
+		var min_dist_sq: float = INF
+		for active_inst: DamageNumber in _active_damage_instances:
+			var d_sq: float = pos.distance_squared_to(active_inst.global_position)
+			if d_sq < min_dist_sq:
+				min_dist_sq = d_sq
+				best_inst = active_inst
+		if best_inst:
+			best_inst.aggregate_damage(text, color, is_crit)
+			return best_inst
+	
 	var inst: DamageNumber = get_damage_number(target_parent)
 	if not inst:
 		inst = DAMAGE_NUMBER_SCENE.instantiate() as DamageNumber
 		var p: Node = target_parent if is_instance_valid(target_parent) else (_pool_container if is_instance_valid(_pool_container) else self)
 		p.add_child(inst)
 	inst.spawn(pos, text, color, is_crit)
+	if not _active_damage_instances.has(inst):
+		_active_damage_instances.append(inst)
 	return inst
+
+
+## Returns count of currently active floating damage popups.
+func get_active_damage_number_count() -> int:
+	_active_damage_instances = _active_damage_instances.filter(func(d: DamageNumber) -> bool:
+		return is_instance_valid(d) and not d.is_queued_for_deletion() and d.visible and d.is_inside_tree()
+	)
+	return _active_damage_instances.size()
 
 
 # --- Death Sparks Pool ---
@@ -175,7 +212,10 @@ func return_death_sparks(inst: DeathSparks) -> void:
 
 
 ## Spawn and trigger death sparks burst with zero allocations.
+## Culls particle emission if frame delta drops below 30 FPS (>0.0333s).
 func spawn_death_sparks(pos: Vector2, color: Color, target_parent: Node = null) -> DeathSparks:
+	if _last_frame_delta > 0.0334 or (Engine.get_frames_per_second() > 0 and Engine.get_frames_per_second() < 30):
+		return null
 	var inst: DeathSparks = get_death_sparks(target_parent)
 	inst.global_position = pos
 	inst.trigger(color)
@@ -409,6 +449,7 @@ func recycle_all_active() -> void:
 	_damage_pool = _damage_pool.filter(func(n: DamageNumber) -> bool: return is_instance_valid(n))
 	_sparks_pool = _sparks_pool.filter(func(n: DeathSparks) -> bool: return is_instance_valid(n))
 	_shockwave_pool = _shockwave_pool.filter(func(n: Line2D) -> bool: return is_instance_valid(n))
+	_active_damage_instances.clear()
 	
 	for entry: Dictionary in _mortar_pool:
 		if entry.get("in_use", false):

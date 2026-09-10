@@ -14,6 +14,7 @@ extends Resource
 @export var hazard_type: String = "none"
 @export var unlocked_socket_count: int = 4
 @export var socket_unlock_costs: Array[int] = []
+@export var enemy_speed_multiplier: float = 1.0
 
 
 ## Returns an array of Vector2 positions extracted from socket_transforms.

@@ -6,6 +6,7 @@ extends Node2D
 @onready var label: Label = $Label
 
 var _active_tween: Tween = null
+var current_value: float = 0.0
 
 
 func _ready() -> void:
@@ -13,7 +14,7 @@ func _ready() -> void:
 
 
 ## Initialize and launch floating combat text animation from a pooled or new instance.
-func spawn(pos: Vector2, text_str: String, text_color: Color = Color.WHITE, is_crit: bool = false) -> void:
+func spawn(pos: Vector2, text_str: String, text_color: Color = Color.WHITE, is_crit: bool = false, numeric_value: float = 0.0) -> void:
 	if not is_in_group("damage_popups"):
 		add_to_group("damage_popups")
 
@@ -23,6 +24,15 @@ func spawn(pos: Vector2, text_str: String, text_color: Color = Color.WHITE, is_c
 	global_position = pos
 	modulate = Color(1.0, 1.0, 1.0, 1.0)
 	visible = true
+	
+	if numeric_value > 0.0:
+		current_value = numeric_value
+	else:
+		var clean_str: String = text_str.trim_suffix("!").strip_edges()
+		if clean_str.is_valid_float():
+			current_value = clean_str.to_float()
+		else:
+			current_value = 0.0
 	
 	if label:
 		label.text = text_str
@@ -45,6 +55,53 @@ func spawn(pos: Vector2, text_str: String, text_color: Color = Color.WHITE, is_c
 		_active_tween.set_parallel(true)
 		_active_tween.tween_property(self, "global_position", end_pos, 0.65).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_active_tween.tween_property(self, "modulate:a", 0.0, 0.65).set_ease(Tween.EASE_IN)
+		_active_tween.chain().tween_callback(_recycle)
+	else:
+		_recycle()
+
+
+## Aggregate incoming damage onto this active instance instead of spawning a new popup.
+func aggregate_damage(add_text: String, add_color: Color = Color.WHITE, add_crit: bool = false, add_value: float = 0.0) -> void:
+	if not label:
+		label = $Label if has_node("Label") else null
+	
+	var val: float = add_value
+	if val <= 0.0:
+		var clean_str: String = add_text.trim_suffix("!").strip_edges()
+		if clean_str.is_valid_float():
+			val = clean_str.to_float()
+	
+	if val > 0.0 and current_value > 0.0:
+		current_value += val
+		var disp: String = str(roundi(current_value)) if current_value >= 1.0 else str(snappedf(current_value, 0.1))
+		if add_crit or (label and label.text.ends_with("!")):
+			disp += "!"
+		if label:
+			label.text = disp
+			label.modulate = add_color
+			label.add_theme_color_override("font_color", add_color)
+	else:
+		if label:
+			label.text = add_text
+			label.modulate = add_color
+			label.add_theme_color_override("font_color", add_color)
+	
+	# Tactile punch scale pulse on aggregation
+	var target_scale: Vector2 = Vector2(1.5, 1.5) if (add_crit or scale.x > 1.2) else Vector2(1.25, 1.25)
+	scale = target_scale
+	modulate.a = 1.0
+	
+	# Extend drift and fade animation
+	if _active_tween and _active_tween.is_valid():
+		_active_tween.kill()
+		
+	var end_pos: Vector2 = global_position + Vector2(randf_range(-8.0, 8.0), randf_range(-15.0, -25.0))
+	_active_tween = create_tween()
+	if _active_tween:
+		_active_tween.set_parallel(true)
+		_active_tween.tween_property(self, "global_position", end_pos, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_active_tween.tween_property(self, "modulate:a", 0.0, 0.55).set_ease(Tween.EASE_IN)
+		_active_tween.tween_property(self, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK)
 		_active_tween.chain().tween_callback(_recycle)
 	else:
 		_recycle()

@@ -33,6 +33,7 @@ var stun_timer: float = 0.0
 var nanite_stacks: int = 0
 var nanite_timer: float = 0.0
 var _nanite_tick_acc: float = 0.0
+var _is_bursting: bool = false
 
 # Elite Composable Modifiers
 var active_modifiers: Array[EnemyModifier] = []
@@ -232,26 +233,75 @@ func _trigger_overload(reaction_mult: float) -> void:
 		tree.current_scene.call("trigger_shake", 6.0, 0.15)
 
 
+## Query nearby enemy targets up to max_targets (default 12) using PhysicsDirectSpaceState2D with spatial fallback.
+func _get_nearby_enemies(radius: float, max_targets: int = 12) -> Array[EnemyBase]:
+	var targets: Array[EnemyBase] = []
+	var world2d: World2D = get_world_2d()
+	if world2d:
+		var space_state: PhysicsDirectSpaceState2D = world2d.direct_space_state
+		if space_state:
+			var query: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
+			var circle: CircleShape2D = CircleShape2D.new()
+			circle.radius = radius
+			query.shape = circle
+			query.transform = Transform2D(0.0, global_position)
+			query.collision_mask = 2 # HitboxArea
+			query.collide_with_areas = true
+			query.collide_with_bodies = false
+			query.margin = 0.0
+			var hits: Array[Dictionary] = space_state.intersect_shape(query, max_targets + 4)
+			for hit in hits:
+				var collider: Object = hit.get("collider")
+				if collider is Area2D:
+					var parent: Node = (collider as Area2D).get_parent()
+					if parent is EnemyBase and parent != self:
+						var enemy: EnemyBase = parent as EnemyBase
+						if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead:
+							if not targets.has(enemy):
+								targets.append(enemy)
+								if targets.size() >= max_targets:
+									return targets
+
+	# Spatial distance early-exit fallback (for headless testing or when physics space is inactive)
+	if targets.is_empty():
+		var tree: SceneTree = get_tree()
+		if tree:
+			var enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+			var r_sq: float = radius * radius
+			for node: Node in enemies:
+				if node == self or not (node is EnemyBase):
+					continue
+				var enemy: EnemyBase = node as EnemyBase
+				if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
+					continue
+				if global_position.distance_squared_to(enemy.global_position) <= r_sq:
+					targets.append(enemy)
+					if targets.size() >= max_targets:
+						break
+	return targets
+
+
 func _trigger_elemental_aoe(radius: float, dmg: float, fx_color: Color) -> void:
+	if _is_bursting:
+		return
+	_is_bursting = true
+	
 	var tree: SceneTree = get_tree()
 	if not tree:
+		_is_bursting = false
 		return
 	
 	# Pooled expanding shockwave visual
 	if NodePool != null and is_instance_valid(NodePool):
 		NodePool.spawn_shockwave(global_position, radius, fx_color, 0.18)
 	
-	# Damage nearby enemies
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
-	var r_sq: float = radius * radius
-	for node: Node in enemies:
-		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
-			continue
-		var enemy: EnemyBase = node as EnemyBase
-		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.is_dead:
-			continue
-		if global_position.distance_squared_to(enemy.global_position) <= r_sq:
+	# Damage nearby enemies (max 12 targets capped per burst)
+	var targets: Array[EnemyBase] = _get_nearby_enemies(radius, 12)
+	for enemy: EnemyBase in targets:
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead:
 			enemy.take_damage(dmg, true, fx_color)
+			
+	_is_bursting = false
 
 
 func _spawn_reaction_text(text_str: String, color: Color) -> void:
@@ -351,14 +401,14 @@ func die() -> void:
 			mod.on_death()
 	
 	# Corrosive Nanite Detonation
-	if nanite_stacks > 0:
+	if nanite_stacks > 0 and not _is_bursting:
 		var outbreak_active: bool = GlobalState.run_modifiers.get("nanite_virulent_outbreak", 0.0) > 0.0
 		var req_stacks: int = 4 if outbreak_active else 5
 		if nanite_stacks >= req_stacks:
 			_trigger_nanite_burst(outbreak_active)
 	
 	# Cryo Resonance: Permafrost ice shrapnel shatter on death
-	if (elemental_status["cryo"] > 0.0 or slow_timer > 0.0) and Arena.is_cryo_resonance_active():
+	if (elemental_status["cryo"] > 0.0 or slow_timer > 0.0) and Arena.is_cryo_resonance_active() and not _is_bursting:
 		_trigger_cryo_shatter()
 	
 	_spawn_death_sparks()
@@ -398,8 +448,12 @@ func add_nanite_stacks(count: int = 1, duration: float = 4.0) -> void:
 
 
 func _trigger_nanite_burst(outbreak_active: bool) -> void:
+	if _is_bursting:
+		return
+	_is_bursting = true
 	var tree: SceneTree = get_tree()
 	if not tree:
+		_is_bursting = false
 		return
 	var radius: float = 75.0
 	var dmg: float = 60.0 + float(nanite_stacks) * 10.0
@@ -412,36 +466,39 @@ func _trigger_nanite_burst(outbreak_active: bool) -> void:
 	var burst_text: String = loc_mgr.call("get_text", "REACTION_CORROSIVE", "[CORROSIVE BURST !]") if loc_mgr else "[CORROSIVE BURST !]"
 	_spawn_reaction_text(burst_text, fx_color)
 	
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
-	var r_sq: float = radius * radius
-	for node: Node in enemies:
-		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
-			continue
-		var enemy: EnemyBase = node as EnemyBase
-		if enemy != self and is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
+	var targets: Array[EnemyBase] = _get_nearby_enemies(radius, 12)
+	for enemy: EnemyBase in targets:
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead:
 			enemy.take_damage(dmg, true, fx_color)
 			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and outbreak_active:
 				enemy.add_nanite_stacks(3)
+				
+	_is_bursting = false
 
 
 func _trigger_cryo_shatter() -> void:
+	if _is_bursting:
+		return
+	_is_bursting = true
 	var tree: SceneTree = get_tree()
 	if not tree:
+		_is_bursting = false
 		return
 	
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
-	var r_sq: float = 65.0 * 65.0
-	for node: Node in enemies:
-		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
-			continue
-		var enemy: EnemyBase = node as EnemyBase
-		if enemy != self and is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_squared_to(enemy.global_position) <= r_sq:
+	var targets: Array[EnemyBase] = _get_nearby_enemies(65.0, 12)
+	for enemy: EnemyBase in targets:
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead:
 			enemy.take_damage(40.0, false, Color("#64D2FF"))
 			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
 				enemy.apply_element("cryo", 2.5, 40.0)
+				
+	_is_bursting = false
 
 
 func _spawn_death_sparks() -> void:
+	# Cull particles under heavy load (< 30 FPS or frame delta > 0.0333s)
+	if get_process_delta_time() > 0.0334 or (Engine.get_frames_per_second() > 0 and Engine.get_frames_per_second() < 30):
+		return
 	var target_parent: Node = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_parent()
 	if NodePool != null and is_instance_valid(NodePool):
 		NodePool.spawn_death_sparks(global_position, primary_color, target_parent)
@@ -474,12 +531,9 @@ func _trigger_core_reactive_discharge(insulator_lvl: int) -> void:
 		return
 	
 	var shock_dmg: float = 50.0 * float(insulator_lvl)
-	var enemies: Array[Node] = tree.get_nodes_in_group("enemies").duplicate()
-	for node: Node in enemies:
-		if not is_instance_valid(node) or node.is_queued_for_deletion() or not (node is EnemyBase):
-			continue
-		var enemy: EnemyBase = node as EnemyBase
-		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead and global_position.distance_to(enemy.global_position) <= 260.0:
+	var targets: Array[EnemyBase] = _get_nearby_enemies(260.0, 16)
+	for enemy: EnemyBase in targets:
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion() and not enemy.is_dead:
 			enemy.take_damage(shock_dmg, true, Color("#FF6B2B"))
 			if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
 				enemy.apply_element("pyro", 3.0, shock_dmg)

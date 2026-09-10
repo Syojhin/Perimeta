@@ -13,4 +13,5 @@ ambient_tint = Color(0.08, 0.15, 0.16, 1)
 hazard_type = "napalm"
 unlocked_socket_count = 6
 socket_unlock_costs = Array[int]([0, 0, 0, 0, 0, 0, 100, 175, 250, 350, 400, 100, 175, 250, 350, 400])
+enemy_speed_multiplier = 1.25
 

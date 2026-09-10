@@ -21,6 +21,8 @@ const PHASE_ENEMY_SCENE: PackedScene = preload("res://scenes/enemies/variants/Ph
 @export var time_between_waves: float = 4.0
 @export var spawn_interval: float = 0.65
 @export var auto_start: bool = true
+@export var max_concurrent_enemies: int = 60
+@export var enemy_speed_multiplier: float = 1.0
 
 var dynamic_paths: Array[Path2D] = []
 
@@ -68,6 +70,14 @@ func _process(delta: float) -> void:
 	
 	# Handle active wave spawning
 	if is_spawning and enemies_remaining_to_spawn > 0:
+		var current_living: int = active_enemies
+		var tree: SceneTree = get_tree()
+		if tree:
+			var group_enemies: Array[Node] = tree.get_nodes_in_group("enemies")
+			current_living = maxi(active_enemies, group_enemies.size())
+		if current_living >= max_concurrent_enemies:
+			return # Pause spawn pacing until active backlog thins out
+			
 		_spawn_timer -= delta
 		if _spawn_timer <= 0.0:
 			_spawn_enemy()
@@ -248,6 +258,9 @@ func _spawn_enemy() -> void:
 	
 	if not enemy_instance:
 		return
+	
+	if enemy_speed_multiplier != 1.0:
+		enemy_instance.move_speed *= enemy_speed_multiplier
 	
 	chosen_path.add_child(enemy_instance)
 	active_enemies += 1
